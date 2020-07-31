@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cstdio>
 #ifdef _WIN32
 
 #include <conio.h>

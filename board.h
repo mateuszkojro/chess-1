@@ -7,6 +7,7 @@
 
 
 #include <vector>
+
 #include "piece.h"
 #include "mov.h"
 #include "compare.h"

@@ -4,6 +4,7 @@
 #ifdef _WIN32
 #include <conio.h>
 #endif
+#include <cstdio>
 #include "piece.h"
 #include "mov.h"
 #include "compare.h"
