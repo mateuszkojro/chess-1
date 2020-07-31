@@ -1,17 +1,13 @@
 //
 // Created by piotr on 28.06.2020.
 //
+#ifdef _WIN32
 #include <conio.h>
+#endif
 #include "piece.h"
 #include "mov.h"
 #include "compare.h"
 
-
-piece::piece(const piece &a) {
-    emblem = a.emblem;
-    is_moved = a.is_moved;
-    color = a.color;
-}
 
 piece &piece::operator=(piece *a) {
     emblem = a->emblem;
@@ -849,23 +845,6 @@ bool binary(int check, arr tab) {
     return false;
 }
 
-bool binary(int check, std::vector<int> tab) {
-    int l = 0, r = tab.size();
-
-    while (l <= r) {
-        int m = l + (r - l) / 2;
-        if (tab[m] == check)
-            return true;
-
-        if (tab[m] < check)
-            l = m + 1;
-        else
-            r = m - 1;
-    }
-    return false;
-}
-
-
 bool piece::possible(int position, piece *grid, int go_to, bool pin) {
 
     int px = position / 8, py = position % 8, gx = go_to / 8, gy = go_to % 8;
@@ -1062,14 +1041,13 @@ bool piece::possible(int position, piece *grid, int go_to, bool pin) {
 
 }    //todo test it ;znaczy zwal to na elizę
 
-
-arr
-piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze kolorki figur przeciwnego teamu zrobiłeś
+arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze kolorki figur przeciwnego teamu zrobiłeś
 
     arr possible_moves;
     if (emblem == 'k') return possible_moves;
 
     int px = position / 8, py = position % 8;
+
     int kx, ky;
 
     for (int i = 0; i < 64; i++) {

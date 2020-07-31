@@ -1,10 +1,11 @@
 #include <iostream>
-#include <conio.h>
+#ifdef _WIN32
+ #include <conio.h>
+#endif
 #include <time.h>
 #include "piece.h"
 #include "board.h"
-#include "node.h"
-#include "mov.h"
+
 
 int main() {
 

@@ -1,12 +1,12 @@
 ////0 białe i czarne
 
 
+#include <iostream>
+#include <fstream>
 #ifdef _WIN32
 
-#include <windows.h>
-#include <iostream>
 #include <conio.h>
-#include <fstream>
+#include <windows.h>
 
 void sleep(unsigned milliseconds) {
     Sleep(milliseconds);
@@ -26,7 +26,12 @@ void sleep(unsigned milliseconds)
 {
     usleep(milliseconds * 1000); // takes microseconds
 }
-
+void getch(){
+    char a;
+    printf("it's 4 getch")
+    std::cin>>a;
+    return a;
+}
 
 #endif
 
@@ -41,21 +46,7 @@ int ctn(char x, char y) {
     return ((static_cast<int>(x) - 56) * (-8)) + (static_cast<int>(y) - 97);
 }
 
-int max(std::vector<mov> row) {
-    int k = 0;
-    for (int i = 1; i < row.size(); ++i) {
-        if (row[i].eva > row[k].eva) k = i;
-    }
-    return k;
-}
 
-int min(std::vector<mov> row) {
-    int k = 0;
-    for (int i = 1; i < row.size(); ++i) {
-        if (row[i].eva < row[k].eva) k = i;
-    }
-    return k;
-}
 
 int max(dynamic_arr row) {
     int k = 0;
@@ -885,7 +876,6 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
         case 0:
             break;
     }
-
     arr temp_moves;
     dynamic_arr array_of_moves;
     //todo minmax jest pojebany i ty go źle napisałeś bo jesteś głupi

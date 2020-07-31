@@ -169,7 +169,7 @@ public:
             max_siz = siz + inkrement;
             tab = new mov[max_siz];
             for(int i=0;i<siz;i++) tab[i]=tp[i];
-
+            delete[] tp.tab;
         }
         tab[siz] = a;
         siz++;
