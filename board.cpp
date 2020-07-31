@@ -8,7 +8,7 @@
 #include <conio.h>
 #include <windows.h>
 
-void sleep(unsigned milliseconds) {
+void w8(unsigned milliseconds) {
     Sleep(milliseconds);
 }
 
@@ -22,8 +22,9 @@ void clear() {
 // Created by piotr on 28.06.2020.
 #include <unistd.h>
 
-void sleep(unsigned milliseconds)
-{
+void w8(unsigned milliseconds){
+
+
     usleep(milliseconds * 1000); // takes microseconds
 }
 void clear(){}
@@ -568,16 +569,16 @@ void board::pvp() {
 
     if (sum < 0) {
         printf("black won");
-        sleep(5000);
+        w8(5000);
         printf("even tho this is chess not basketball");
     } else {
         printf("white won");
-        sleep(5000);
+        w8(5000);
         printf("obviously");
-        sleep(5000);
+        w8(5000);
         printf("i mean daaaa");
     }
-    sleep(50000);
+    w8(50000);
     printf("jebaczuzietermosem");
 
 
