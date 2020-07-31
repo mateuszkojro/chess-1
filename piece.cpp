@@ -2,8 +2,11 @@
 // Created by piotr on 28.06.2020.
 //
 #ifdef _WIN32
+
 #include <conio.h>
+
 #endif
+
 #include <cstdio>
 #include "piece.h"
 #include "mov.h"
@@ -1049,26 +1052,26 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
 
     int px = position / 8, py = position % 8;
 
-    int kx, ky;
+    int king_x = 65, king_y = 65;
 
     for (int i = 0; i < 64; i++) {
         if (grid[i].emblem == 'k' && grid[i].color == color) {
-            kx = i / 8;
-            ky = i % 8;
+            king_x = i / 8;
+            king_y = i % 8;
             break;
 
         }
-        if (i == 63) return possible_moves;
-    }
 
+    }
+    if (king_x == 65) return possible_moves;
 
     ///r
-    int b = ky - kx;
+    int b = king_y - king_x;
 
-    if (px == kx) {
-        if (py > ky) {
+    if (px == king_x) {
+        if (py > king_y) {
 
-            int i = ky;
+            int i = king_y;
             for (; i < 7; i++) {
 
                 if (grid[px * 8 + i].emblem != '*') {
@@ -1080,19 +1083,8 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                                     possible_moves.push_back(px * 8 + i);
                                     i++;
                                     break;
-                                case 'p':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'n':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'b':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'k':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                default:
+
+                                case 'r':
                                     if (grid[px * 8 + i].color == color) {
                                         possible_moves.clear();
                                         return possible_moves;
@@ -1106,6 +1098,20 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                                     if (possible_moves.size() == 0) possible_moves.push_back(-1);
 
                                     return possible_moves;
+                                case 'q':
+                                    if (grid[px * 8 + i].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(px * 8 + i);
+
+                                    for (i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!grid[position].possible(position, grid, possible_moves[i], false))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
+                                    return possible_moves;
+
 
                             }
                         }
@@ -1117,10 +1123,10 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
             }
         } else {
 
-            int i = ky;
+            int i = king_y;
             i--;
             for (; i > 0; i--) {
-                if (grid[kx * 8 + i].emblem != '*') {
+                if (grid[king_x * 8 + i].emblem != '*') {
                     if (i == py) {
 
                         i--;
@@ -1130,20 +1136,8 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                                     possible_moves.push_back(px * 8 + i);
                                     i--;
                                     break;
-                                case 'p':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'n':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'b':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'k':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                default:
-                                    if (grid[px * 8 + i].color == grid[position].color) {
+                                case 'r':
+                                    if (grid[px * 8 + i].color == color) {
                                         possible_moves.clear();
                                         return possible_moves;
                                     } else possible_moves.push_back(px * 8 + i);
@@ -1151,9 +1145,23 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                                     for (i = possible_moves.size() - 1; i >= 0; i--)
                                         if (!grid[position].possible(position, grid, possible_moves[i], false))
                                             possible_moves.erase(i);
+
                                     possible_moves.clr();
                                     if (possible_moves.size() == 0) possible_moves.push_back(-1);
 
+                                    return possible_moves;
+                                case 'q':
+                                    if (grid[px * 8 + i].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(px * 8 + i);
+
+                                    for (i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!grid[position].possible(position, grid, possible_moves[i], false))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
                                     return possible_moves;
 
                             }
@@ -1163,9 +1171,9 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                 } else possible_moves.push_back(px * 8 + i);
             }
         }
-    } else if (py == ky) {
-        if (px > kx) {
-            int i = kx;
+    } else if (py == king_y) {
+        if (px > king_x) {
+            int i = king_x;
             while (i < 7) {
                 i++;
                 if (grid[i * 8 + py].emblem != '*') {
@@ -1176,30 +1184,32 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                                 case '*':
                                     possible_moves.push_back(i * 8 + py);
                                     i++;
-                                case 'p':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'n':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'b':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'k':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                default:
-                                    if (grid[i * 8 + py].color == grid[position].color) {
+                                case 'r':
+                                    if (grid[px * 8 + i].color == color) {
                                         possible_moves.clear();
                                         return possible_moves;
-                                    } else possible_moves.push_back(i * 8 + py);
+                                    } else possible_moves.push_back(px * 8 + i);
 
                                     for (i = possible_moves.size() - 1; i >= 0; i--)
                                         if (!grid[position].possible(position, grid, possible_moves[i], false))
-                                            possible_moves.erase(+i);
+                                            possible_moves.erase(i);
 
                                     possible_moves.clr();
                                     if (possible_moves.size() == 0) possible_moves.push_back(-1);
+
+                                    return possible_moves;
+                                case 'q':
+                                    if (grid[px * 8 + i].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(px * 8 + i);
+
+                                    for (i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!grid[position].possible(position, grid, possible_moves[i], false))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
                                     return possible_moves;
                             }
                         }
@@ -1208,7 +1218,7 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                 } else possible_moves.push_back(i * 8 + py);
             }
         } else {
-            int i = kx;
+            int i = king_x;
             while (i >= 0) {
                 i--;
                 if (grid[i * 8 + py].emblem != '*') {
@@ -1220,23 +1230,11 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                                     possible_moves.push_back(i * 8 + py);
                                     i--;
                                     break;
-                                case 'p':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'n':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'b':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'k':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                default:
-                                    if (grid[i * 8 + py].color == grid[position].color) {
+                                case 'r':
+                                    if (grid[px * 8 + i].color == color) {
                                         possible_moves.clear();
                                         return possible_moves;
-                                    } else possible_moves.push_back(i * 8 + py);
+                                    } else possible_moves.push_back(px * 8 + i);
 
                                     for (i = possible_moves.size() - 1; i >= 0; i--)
                                         if (!grid[position].possible(position, grid, possible_moves[i], false))
@@ -1246,7 +1244,19 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                                     if (possible_moves.size() == 0) possible_moves.push_back(-1);
 
                                     return possible_moves;
+                                case 'q':
+                                    if (grid[px * 8 + i].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(px * 8 + i);
 
+                                    for (i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!grid[position].possible(position, grid, possible_moves[i], false))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
+                                    return possible_moves;
                             }
                         }
                     } else possible_moves.clear();
@@ -1255,8 +1265,8 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
             }
         }
     } else if (py == (px + b)) {
-        if (py > ky) {
-            int nx = kx, ny = ky;
+        if (py > king_y) {
+            int nx = king_x, ny = king_y;
             while (nx > 0 && ny < 7) {
                 nx--;
                 ny++;
@@ -1273,20 +1283,8 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                                     nx--;
                                     ny++;
                                     break;
-                                case 'p':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'n':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'r':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'k':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                default:
-                                    if (grid[nx * 8 + ny].color == grid[position].color) {
+                                case 'b':
+                                    if (grid[nx * 8 + ny].color == color) {
                                         possible_moves.clear();
                                         return possible_moves;
                                     } else possible_moves.push_back(nx * 8 + ny);
@@ -1299,6 +1297,19 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                                     if (possible_moves.size() == 0) possible_moves.push_back(-1);
 
                                     return possible_moves;
+                                case 'q':
+                                    if (grid[nx * 8 + ny].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(nx * 8 + ny);
+
+                                    for (int i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!grid[position].possible(position, grid, possible_moves[i], false))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
+                                    return possible_moves;
                             }
                         }
                     } else possible_moves.clear();
@@ -1306,7 +1317,7 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                 } else possible_moves.push_back(nx * 8 + ny);
             }
         } else {
-            int nx = kx, ny = ky;
+            int nx = king_x, ny = king_y;
             while (nx < 7 && ny > 0) {
                 nx++;
                 ny--;
@@ -1322,20 +1333,8 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                                     nx--;
                                     ny++;
                                     break;
-                                case 'p':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'n':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'r':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'k':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                default:
-                                    if (grid[nx * 8 + ny].color == grid[position].color) {
+                                case 'b':
+                                    if (grid[nx * 8 + ny].color == color) {
                                         possible_moves.clear();
                                         return possible_moves;
                                     } else possible_moves.push_back(nx * 8 + ny);
@@ -1343,10 +1342,23 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                                     for (int i = possible_moves.size() - 1; i >= 0; i--)
                                         if (!grid[position].possible(position, grid, possible_moves[i], false))
                                             possible_moves.erase(i);
-                                    possible_moves.clr();
 
+                                    possible_moves.clr();
                                     if (possible_moves.size() == 0) possible_moves.push_back(-1);
 
+                                    return possible_moves;
+                                case 'q':
+                                    if (grid[nx * 8 + ny].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(nx * 8 + ny);
+
+                                    for (int i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!grid[position].possible(position, grid, possible_moves[i], false))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
                                     return possible_moves;
                             }
                         }
@@ -1356,8 +1368,8 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
             }
         }
     } else if (py == (px - b)) {
-        if (py < ky) {
-            int nx = kx, ny = ky;
+        if (py < king_y) {
+            int nx = king_x, ny = king_y;
 
             while (nx > 0 && ny > 0) {
                 nx--;
@@ -1375,20 +1387,8 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                                     nx--;
                                     ny--;
                                     break;
-                                case 'p':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'n':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'r':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'k':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                default:
-                                    if (grid[nx * 8 + ny].color == grid[position].color) {
+                                case 'b':
+                                    if (grid[nx * 8 + ny].color == color) {
                                         possible_moves.clear();
                                         return possible_moves;
                                     } else possible_moves.push_back(nx * 8 + ny);
@@ -1401,6 +1401,19 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                                     if (possible_moves.size() == 0) possible_moves.push_back(-1);
 
                                     return possible_moves;
+                                case 'q':
+                                    if (grid[nx * 8 + ny].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(nx * 8 + ny);
+
+                                    for (int i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!grid[position].possible(position, grid, possible_moves[i], false))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
+                                    return possible_moves;
                             }
                         }
                     } else possible_moves.clear();
@@ -1408,7 +1421,7 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                 } else possible_moves.push_back(nx * 8 + ny);
             }
         } else {
-            int nx = kx, ny = ky;
+            int nx = king_x, ny = king_y;
 
             while (nx < 7 && ny < 7) {
                 nx++;
@@ -1426,20 +1439,8 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                                     nx++;
                                     ny++;
                                     break;
-                                case 'p':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'n':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'r':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                case 'k':
-                                    possible_moves.clear();
-                                    return possible_moves;
-                                default:
-                                    if (grid[nx * 8 + ny].color == grid[position].color) {
+                                case 'b':
+                                    if (grid[nx * 8 + ny].color == color) {
                                         possible_moves.clear();
                                         return possible_moves;
                                     } else possible_moves.push_back(nx * 8 + ny);
@@ -1451,6 +1452,19 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
                                     possible_moves.clr();
                                     if (possible_moves.size() == 0) possible_moves.push_back(-1);
 
+                                    return possible_moves;
+                                case 'q':
+                                    if (grid[nx * 8 + ny].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(nx * 8 + ny);
+
+                                    for (int i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!grid[position].possible(position, grid, possible_moves[i], false))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
                                     return possible_moves;
                             }
                         }
