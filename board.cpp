@@ -36,8 +36,7 @@ void getch(){
 #endif
 
 #include "board.h"
-#include "node.h"
-#include "mov.h"
+
 
 #define black true
 #define white false

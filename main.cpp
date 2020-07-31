@@ -32,7 +32,6 @@ int main() {
  //    cghe.admin_l("test.txt");
        cghe.admin();
 std::cout<<">>>>>>>>>"<< compare::counter <<"<<<<<<<";
-getch();
 
 
 //TODO  dać Elizie porzetesować szachwnice i najlepiej jeszcze komuś
@@ -40,6 +39,5 @@ getch();
 
 //todo zfinalizuj warunki
     printf("xd");
-    getch();
     return 0;
 }
