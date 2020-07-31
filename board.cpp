@@ -26,9 +26,10 @@ void sleep(unsigned milliseconds)
 {
     usleep(milliseconds * 1000); // takes microseconds
 }
-void getch(){
+void clear(){}
+char getch(){
     char a;
-    printf("it's 4 getch")
+    printf("it's 4 getch");
     std::cin>>a;
     return a;
 }
