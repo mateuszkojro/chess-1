@@ -113,6 +113,7 @@ public:
 
     void clear() {
         siz = 0;
+      //  rej =0;
         for (int &i : tab)i = -101;
 
 

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdio>
+
 #ifdef _WIN32
 
 #include <conio.h>
@@ -47,7 +48,6 @@ char getch(){
 int ctn(char x, char y) {
     return ((static_cast<int>(x) - 56) * (-8)) + (static_cast<int>(y) - 97);
 }
-
 
 
 int max(dynamic_arr row) {
@@ -406,6 +406,12 @@ void board::admin() {
         switch (temp[0]) {
             case 'q':
                 return;
+            case 'o':
+                for(int i=0;i<64;i++){
+                    grid[i].color =! grid[i].color;
+                }
+
+                break;
             case 'h':
                 printf("to add a piece use command \"a(piece type)(position)(color)\"\n"
                        "to subtract a piece use command \"s(position)\"\n"
@@ -425,8 +431,8 @@ void board::admin() {
             case 'b': {
 
                 arr legal;
-                legal =grid[ctn(temp[2], temp[1])].pin(ctn(temp[2], temp[1]), grid);
-                for (int i=0;i<legal.size();i++) {
+                legal = grid[ctn(temp[2], temp[1])].pin(ctn(temp[2], temp[1]), grid);
+                for (int i = 0; i < legal.size(); i++) {
 
                     printf("%c%d  ", (char) legal[i] % 8 + 97, ((legal[i] / 8) - 8) * (-1));
 
@@ -443,7 +449,7 @@ void board::admin() {
                 grid[ctn(temp[2], temp[1])] = new piece();
                 break;
             case '*': {
-                bool color = static_cast<bool>(static_cast<int>(temp[1])-48);
+                bool color = static_cast<bool>(static_cast<int>(temp[1]) - 48);
                 int deepth = static_cast<int>(temp[2]) - 48;
                 mov tp = bip(color, deepth);
                 printf("%c%d -> ", (char) tp.pos % 8 + 97, ((tp.pos / 8) - 8) * (-1));
@@ -464,12 +470,12 @@ void board::admin() {
                         std::vector<bool> color_legal;
                         std::vector<bool> moved_legal;
 
-                        for (int i=0;i<legal.size();i++) {
+                        for (int i = 0; i < legal.size(); i++) {
                             char_legal.push_back(grid[i].emblem);
                             color_legal.push_back(grid[i].color);
                             moved_legal.push_back(grid[i].is_moved);
                         }
-                        for (int i=0;i<legal.size();i++) grid[legal[i]] = new piece('@', false);
+                        for (int i = 0; i < legal.size(); i++) grid[legal[i]] = new piece('@', false);
                         clear();
                         this->show();
                         for (int i = 0; i < legal.size(); i++)
@@ -477,7 +483,8 @@ void board::admin() {
 
 
                     }
-                    for (int i=0;i<legal.size();i++) printf("%c%d  ", (char) legal[i] % 8 + 97, ((legal[i] / 8) - 8) * (-1));
+                    for (int i = 0; i < legal.size(); i++)
+                        printf("%c%d  ", (char) legal[i] % 8 + 97, ((legal[i] / 8) - 8) * (-1));
                     printf(">%d<", legal.size());
                 }
 
@@ -496,13 +503,13 @@ void board::admin() {
                         myfile >> a;
                         if (a != '*') {
                             if (static_cast<int>(a) >= 97) {
-                                if(a != 'P') grid[i] = new piece(a, false, true);
-                                else grid[i] = new piece(a,false,i/8!=1);
+                                if (a != 'P') grid[i] = new piece(a, false, true);
+                                else grid[i] = new piece(a, false, i / 8 != 1);
 
 
-                            }else {
-                                if (a != 'p') grid[i] = new piece((char)(a+32), true, true);
-                                else grid[i] = new piece((char)(a+32), true, i / 8 != 6);
+                            } else {
+                                if (a != 'p') grid[i] = new piece((char) (a + 32), true, true);
+                                else grid[i] = new piece((char) (a + 32), true, i / 8 != 6);
                             }
                         } else grid[i] = new piece();
 
@@ -679,7 +686,7 @@ mov board::bip(bool color, int deepth) {
     for (int i = 0; i < 64; ++i) {
         if (grid[i].emblem != '*' && grid[i].color == color) {
             temp_moves = grid[i].possible(i, grid);
-            for (int j=0;j<temp_moves.size();j++) {
+            for (int j = 0; j < temp_moves.size(); j++) {
                 mov tp(i, temp_moves[j], 0);
                 tab_of_possible_moves.push_back(tp);
             }
@@ -691,7 +698,7 @@ mov board::bip(bool color, int deepth) {
     for (int i = 0; i < 64; ++i)
         if (grid[i].emblem == 'p' && grid[i].color == color) {
             temp_moves = stuff_with_lil_ones(color, i);
-            for (int j=0;j<temp_moves.size();j++) {
+            for (int j = 0; j < temp_moves.size(); j++) {
                 mov tp(i, temp_moves[j], 0);
                 tab_of_possible_moves.push_back(tp);
             }
@@ -700,7 +707,7 @@ mov board::bip(bool color, int deepth) {
     int casle = tab_of_possible_moves.size();
 
     temp_moves = castle(color);
-    for (int j=0;j<temp_moves.size();j++) {
+    for (int j = 0; j < temp_moves.size(); j++) {
         mov tp(j, j, 0);
         tab_of_possible_moves.push_back(tp);
 
@@ -863,21 +870,23 @@ void board::cvc(int deep) {
 }
 
 double board::minmax(int deep, bool color_to_start, bool color_now) {
-    int sum = 0;
-
+    int no_more_kings = 0;
     if (deep == 0) return this->evaluate();
-
     for (int i = 0; i < 64; i++)
-        if (grid[i].emblem == 'k') grid[i].color != color_to_start ? (sum--) : (sum++);
+        if (grid[i].emblem == 'k'){
+            if(grid[i].color) no_more_kings--;
+            else no_more_kings++;
+        }
 
-        switch (sum) {
+    switch (no_more_kings) {
         case -1:
             return -1000;
         case 1:
             return 1000;
-        case 0:
-            break;
+            //case 0:
+            //  break;
     }
+
     arr temp_moves;
     dynamic_arr array_of_moves;
     //todo minmax jest pojebany i ty go źle napisałeś bo jesteś głupi
@@ -885,7 +894,7 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
     for (int i = 0; i < 64; ++i) {
         if (grid[i].emblem != '*' && grid[i].color == color_now) {
             temp_moves = grid[i].possible(i, grid);
-            for (int j=0;j<temp_moves.size();j++) {
+            for (int j = 0; j < temp_moves.size(); j++) {
                 mov tp(i, temp_moves[j], 0);
                 array_of_moves.push_back(tp);
             }
@@ -897,7 +906,7 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
     for (int i = 0; i < 64; ++i)
         if (grid[i].emblem == 'p' && grid[i].color == color_now) {
             temp_moves = stuff_with_lil_ones(color_now, i);
-            for (int j=0;j<temp_moves.size();j++) {
+            for (int j = 0; j < temp_moves.size(); j++) {
                 mov tp(i, temp_moves[j], 0);
                 array_of_moves.push_back(tp);
             }
@@ -905,300 +914,307 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
 
     int casle = array_of_moves.size();
     temp_moves = castle(color_now);
-    for (int j=0;j<temp_moves.size();j++) {
+    for (int j = 0; j < temp_moves.size(); j++) {
         mov tp(j, j, 0);
         array_of_moves.push_back(tp);
 
     }
     /// evaluation & stuff
-if(array_of_moves.empty())return 0;
+    if (array_of_moves.empty())return 0;
     piece temp[2];
+    double min_or_max;
+    if(color_now)min_or_max = 10000000;
+    else min_or_max = -10000000;
 
-    double min_or_max = this->evaluate();
-    double min_max;
+    double min_max=0.0;
     // reku dla
 
-    if(!color_now){
-            for (int i = 0; i < lil; i++) {
-                temp[0] = grid[array_of_moves[i].g_t];
-                temp[1] = grid[array_of_moves[i].pos];
+    if (color_now == white) {
+        for (int i = 0; i < lil; i++) {
+            //if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
 
-                grid[array_of_moves[i].g_t] = grid[array_of_moves[i].pos];
+            temp[0] = grid[array_of_moves[i].g_t];
+            temp[1] = grid[array_of_moves[i].pos];
 
-                grid[array_of_moves[i].g_t].is_moved = true;
+            grid[array_of_moves[i].g_t] = grid[array_of_moves[i].pos];
 
-                grid[array_of_moves[i].pos].emblem = '*';
+            grid[array_of_moves[i].g_t].is_moved = true;
 
-                min_max = minmax(deep - 1, color_to_start, !color_now);
-                if (min_max > min_or_max) min_or_max = min_max;
+            grid[array_of_moves[i].pos].emblem = '*';
 
-                grid[array_of_moves[i].g_t] = temp[0];
+            min_max = minmax(deep - 1, color_to_start, !color_now);
+            if (min_max > min_or_max) min_or_max = min_max;
 
-                grid[array_of_moves[i].pos] = temp[1];
-            }
+            grid[array_of_moves[i].g_t] = temp[0];
 
-            for (int i = lil; i < array_of_moves.size(); i++) {
-                switch (array_of_moves[i].g_t) {
-                    case 100:
-
-                        temp[0] = grid[array_of_moves[i].g_t]; //i+1
-                        temp[1] = grid[array_of_moves[i].pos];
-
-                        grid[array_of_moves[i].g_t] = new piece('n', color_now, true);
-                        grid[array_of_moves[i].pos].emblem = '*';
-
-                        min_max = minmax(deep - 1, color_to_start, !color_now);
-                        if (min_max > min_or_max) min_or_max = min_max;
-
-                        grid[array_of_moves[i].g_t] = temp[0];
-                        grid[array_of_moves[i].pos] = temp[1];
-                        break;
-                    case 101:
-                        temp[0] = grid[array_of_moves[i].g_t];
-                        temp[1] = grid[array_of_moves[i].pos];
-
-                        grid[array_of_moves[i].g_t] = new piece('q', color_now, true);
-                        grid[array_of_moves[i].pos].emblem = '*';
-
-                        min_max = minmax(deep - 1, color_to_start, !color_now);
-                        if (min_max > min_or_max) min_or_max = min_max;
-
-                        grid[array_of_moves[i].g_t] = temp[0];
-                        grid[array_of_moves[i].pos] = temp[1];
-                        break;
-                    case 66:
-                        if (color_now) {
-                            grid[4].emblem = '*';
-                            grid[5] = new piece('r', color_now, true);
-                            grid[6] = new piece('k', color_now, true);
-                            grid[7].emblem = '*';
-
-                            min_max = minmax(deep - 1, color_to_start, !color_now);
-                            if (min_max > min_or_max) min_or_max = min_max;
-
-                            grid[4] = new piece('k', color_now, false);
-                            grid[5].emblem = '*';
-                            grid[6].emblem = '*';
-                            grid[7] = new piece('r', color_now, false);
-
-
-                        } else {
-                            grid[60].emblem = '*';
-                            grid[61] = new piece('r', color_now, true);
-                            grid[62] = new piece('k', color_now, true);
-                            grid[63].emblem = '*';
-
-                            min_max = minmax(deep - 1, color_to_start, !color_now);
-                            if (min_max > min_or_max) min_or_max = min_max;
-
-                            grid[60] = new piece('k', color_now, false);
-                            grid[61].emblem = '*';
-                            grid[62].emblem = '*';
-                            grid[63] = new piece('r', color_now, false);
-
-                        }
-                        break;
-                    case 666:
-                        if (color_now) {
-                            grid[0].emblem = '*';
-                            grid[1].emblem = '*';
-                            grid[2] = new piece('k', color_now, true);
-                            grid[3] = new piece('r', color_now, true);
-                            grid[4].emblem = '*';
-
-                            min_max = minmax(deep - 1, color_to_start, !color_now);
-                            if (min_max > min_or_max) min_or_max = min_max;
-
-                            grid[0] = new piece('r', color_now, false);
-                            grid[1].emblem = '*';
-                            grid[2].emblem = '*';
-                            grid[3].emblem = '*';
-                            grid[4] = new piece('k', color_now, false);
-
-                        } else {
-                            grid[46].emblem = '*';
-                            grid[47].emblem = '*';
-                            grid[48] = new piece('k', color_now, true);
-                            grid[49] = new piece('r', color_now, true);
-                            grid[50].emblem = '*';
-
-                            min_max = minmax(deep - 1, color_to_start, !color_now);
-                            if (min_max > min_or_max) min_or_max = min_max;
-
-                            grid[46] = new piece('r', color_now, false);
-                            grid[47].emblem = '*';
-                            grid[48].emblem = '*';
-                            grid[49].emblem = '*';
-                            grid[50] = new piece('k', color_now, false);
-                        }
-                        break;
-                    default:
-                        int osem = -8;
-                        if (color_now) osem = 8;
-
-                        temp[0] = grid[array_of_moves[i].g_t + osem];
-                        temp[1] = grid[array_of_moves[i].pos];
-
-                        grid[array_of_moves[i].g_t] = grid[i];
-                        grid[array_of_moves[i].g_t].is_moved = true;
-
-                        grid[array_of_moves[i].pos].emblem = '*';
-                        grid[array_of_moves[i].g_t + osem].emblem = '*';
-
-
-                        min_max = minmax(deep - 1, color_to_start, !color_now);
-                        if (min_max > min_or_max) min_or_max = min_max;
-
-
-                        grid[array_of_moves[i].g_t + osem] = temp[0];
-                        grid[array_of_moves[i].g_t].emblem = '*';
-                        grid[array_of_moves[i].pos] = temp[1];
-                        break;
-                }
-
-
-            }
+            grid[array_of_moves[i].pos] = temp[1];
         }
-    else{
-            for (int i = 0; i < lil; i++) {
-                temp[0] = grid[array_of_moves[i].g_t];
-                temp[1] = grid[array_of_moves[i].pos];
 
-                grid[array_of_moves[i].g_t] = grid[array_of_moves[i].pos];
+        for (int i = lil; i < array_of_moves.size(); i++) {
+            switch (array_of_moves[i].g_t) {
+                case 100:
+              //      if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
+                    temp[0] = grid[array_of_moves[i].g_t]; //i+1
+                    temp[1] = grid[array_of_moves[i].pos];
 
-                grid[array_of_moves[i].g_t].is_moved = true;
+                    grid[array_of_moves[i].g_t] = new piece('n', color_now, true);
+                    grid[array_of_moves[i].pos].emblem = '*';
 
-                grid[array_of_moves[i].pos].emblem = '*';
+                    min_max = minmax(deep - 1, color_to_start, !color_now);
+                    if (min_max > min_or_max) min_or_max = min_max;
 
+                    grid[array_of_moves[i].g_t] = temp[0];
+                    grid[array_of_moves[i].pos] = temp[1];
+                    break;
+                case 101:
+                //    if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
+                    temp[0] = grid[array_of_moves[i].g_t];
+                    temp[1] = grid[array_of_moves[i].pos];
 
-                min_max = minmax(deep - 1, color_to_start, !color_now);
-                if (min_max < min_or_max) min_or_max = min_max;
+                    grid[array_of_moves[i].g_t] = new piece('q', color_now, true);
+                    grid[array_of_moves[i].pos].emblem = '*';
 
+                    min_max = minmax(deep - 1, color_to_start, !color_now);
+                    if (min_max > min_or_max) min_or_max = min_max;
 
-                grid[array_of_moves[i].g_t] = temp[0];
-
-                grid[array_of_moves[i].pos] = temp[1];
-            }
-
-            for (int i = lil; i < array_of_moves.size(); i++) {
-                switch (array_of_moves[i].g_t) {
-                    case 100:
-
-                        temp[0] = grid[array_of_moves[i].g_t]; //i+1
-                        temp[1] = grid[array_of_moves[i].pos];
-
-                        grid[array_of_moves[i].g_t] = new piece('n', color_now, true);
-                        grid[array_of_moves[i].pos].emblem = '*';
-
-
-                        min_max = minmax(deep - 1, color_to_start, !color_now);
-                        if (min_max < min_or_max) min_or_max = min_max;
-
-
-                        grid[array_of_moves[i].g_t] = temp[0];
-                        grid[array_of_moves[i].pos] = temp[1];
-                        break;
-                    case 101:
-                        temp[0] = grid[array_of_moves[i].g_t];
-                        temp[1] = grid[array_of_moves[i].pos];
-
-                        grid[array_of_moves[i].g_t] = new piece('q', color_now, true);
-                        grid[array_of_moves[i].pos].emblem = '*';
-
+                    grid[array_of_moves[i].g_t] = temp[0];
+                    grid[array_of_moves[i].pos] = temp[1];
+                    break;
+                case 66:
+                    if (color_now) {
+                        grid[4].emblem = '*';
+                        grid[5] = new piece('r', color_now, true);
+                        grid[6] = new piece('k', color_now, true);
+                        grid[7].emblem = '*';
 
                         min_max = minmax(deep - 1, color_to_start, !color_now);
-                        if (min_max < min_or_max) min_or_max = min_max;
+                        if (min_max > min_or_max) min_or_max = min_max;
+
+                        grid[4] = new piece('k', color_now, false);
+                        grid[5].emblem = '*';
+                        grid[6].emblem = '*';
+                        grid[7] = new piece('r', color_now, false);
 
 
-                        grid[array_of_moves[i].g_t] = temp[0];
-                        grid[array_of_moves[i].pos] = temp[1];
-                        break;
-                    case 66:
-                        if (color_now) {
-                            grid[4].emblem = '*';
-                            grid[5] = new piece('r', color_now, true);
-                            grid[6] = new piece('k', color_now, true);
-                            grid[7].emblem = '*';
-                            min_max = minmax(deep - 1, color_to_start, !color_now);
-                            if (min_max < min_or_max) min_or_max = min_max;
-                            grid[4] = new piece('k', color_now, false);
-                            grid[5].emblem = '*';
-                            grid[6].emblem = '*';
-                            grid[60].emblem = '*';
-                            grid[63].emblem = '*';
-                            min_max = minmax(deep - 1, color_to_start, !color_now);
-                            if (min_max < min_or_max) min_or_max = min_max;
-                            grid[60] = grid[60];
-                            grid[60].is_moved = false;
-                            grid[63] = grid[61];
-                            grid[61].is_moved = false; // todo poprawspo
-                            grid[61].emblem = '*';
-                            grid[62].emblem = '*';
-
-                        }
-                        break;
-                    case 666:
-                        if (color_now) {
-                            grid[2] = grid[4];
-                            grid[3] = grid[0];
-                            grid[0].emblem = '*';           /// todo  like this one but restxd
-                            grid[1].emblem = '*';
-                            grid[4].emblem = '*';
-                            min_max = minmax(deep - 1, color_to_start, !color_now);
-                            if (min_max < min_or_max) min_or_max = min_max;
-                            grid[0] = grid[3];
-                            grid[0].is_moved = false;
-                            grid[4] = grid[2];
-                            grid[4].is_moved = false;
-
-                            grid[1].emblem = '*';
-                            grid[2].emblem = '*';
-                            grid[3].emblem = '*';
-
-                        } else {
-                            grid[46].emblem = '*';
-                            grid[47].emblem = '*';
-                            grid[48] = new piece('k', color_now, true);
-                            grid[49] = new piece('r', color_now, true);
-                            grid[50].emblem = '*';
-                            min_max = minmax(deep - 1, color_to_start, !color_now);
-                            if (min_max < min_or_max) min_or_max = min_max;
-                            grid[46] = new piece('r', color_now, false);
-                            grid[47].emblem = '*';
-                            grid[48].emblem = '*';
-                            grid[49].emblem = '*';
-                            grid[50] = new piece('k', color_now, false);
-                        }
-                        break;
-                    default:
-                        int osem = -8;
-                        if (color_now) osem = 8;
-
-                        temp[0] = grid[array_of_moves[i].g_t + osem];
-                        temp[1] = grid[array_of_moves[i].pos];
-
-                        grid[array_of_moves[i].g_t] = grid[i];
-                        grid[array_of_moves[i].g_t].is_moved = true;
-
-                        grid[array_of_moves[i].pos].emblem = '*';
-                        grid[array_of_moves[i].g_t + osem].emblem = '*';
+                    } else {
+                        grid[60].emblem = '*';
+                        grid[61] = new piece('r', color_now, true);
+                        grid[62] = new piece('k', color_now, true);
+                        grid[63].emblem = '*';
 
                         min_max = minmax(deep - 1, color_to_start, !color_now);
-                        if (min_max < min_or_max) min_or_max = min_max;
+                        if (min_max > min_or_max) min_or_max = min_max;
 
-                        grid[array_of_moves[i].g_t + osem] = temp[0];
-                        grid[array_of_moves[i].g_t].emblem = '*';
-                        grid[array_of_moves[i].pos] = temp[1];
-                        break;
-                }
+                        grid[60] = new piece('k', color_now, false);
+                        grid[61].emblem = '*';
+                        grid[62].emblem = '*';
+                        grid[63] = new piece('r', color_now, false);
+
+                    }
+                    break;
+                case 666:
+                    if (color_now) {
+                        grid[0].emblem = '*';
+                        grid[1].emblem = '*';
+                        grid[2] = new piece('k', color_now, true);
+                        grid[3] = new piece('r', color_now, true);
+                        grid[4].emblem = '*';
+
+                        min_max = minmax(deep - 1, color_to_start, !color_now);
+                        if (min_max > min_or_max) min_or_max = min_max;
+
+                        grid[0] = new piece('r', color_now, false);
+                        grid[1].emblem = '*';
+                        grid[2].emblem = '*';
+                        grid[3].emblem = '*';
+                        grid[4] = new piece('k', color_now, false);
+
+                    } else {
+                        grid[46].emblem = '*';
+                        grid[47].emblem = '*';
+                        grid[48] = new piece('k', color_now, true);
+                        grid[49] = new piece('r', color_now, true);
+                        grid[50].emblem = '*';
+
+                        min_max = minmax(deep - 1, color_to_start, !color_now);
+                        if (min_max > min_or_max) min_or_max = min_max;
+
+                        grid[46] = new piece('r', color_now, false);
+                        grid[47].emblem = '*';
+                        grid[48].emblem = '*';
+                        grid[49].emblem = '*';
+                        grid[50] = new piece('k', color_now, false);
+                    }
+                    break;
+                default:
+                    int osem = -8;
+                    if (color_now) osem = 8;
+
+                    temp[0] = grid[array_of_moves[i].g_t + osem];
+                    temp[1] = grid[array_of_moves[i].pos];
+
+                    grid[array_of_moves[i].g_t] = grid[i];
+                    grid[array_of_moves[i].g_t].is_moved = true;
+
+                    grid[array_of_moves[i].pos].emblem = '*';
+                    grid[array_of_moves[i].g_t + osem].emblem = '*';
 
 
+                    min_max = minmax(deep - 1, color_to_start, !color_now);
+                    if (min_max > min_or_max) min_or_max = min_max;
+
+
+                    grid[array_of_moves[i].g_t + osem] = temp[0];
+                    grid[array_of_moves[i].g_t].emblem = '*';
+                    grid[array_of_moves[i].pos] = temp[1];
+                    break;
             }
 
 
         }
+    } else {
+        for (int i = 0; i < lil; i++) {
+            //if(grid[array_of_moves[i].g_t].emblem == 'k') return -1000;
+            temp[0] = grid[array_of_moves[i].g_t];
+            temp[1] = grid[array_of_moves[i].pos];
+
+            grid[array_of_moves[i].g_t] = grid[array_of_moves[i].pos];
+
+            grid[array_of_moves[i].g_t].is_moved = true;
+
+            grid[array_of_moves[i].pos].emblem = '*';
 
 
+            min_max = minmax(deep - 1, color_to_start, !color_now);
+            if (min_max < min_or_max) min_or_max = min_max;
+
+
+            grid[array_of_moves[i].g_t] = temp[0];
+
+            grid[array_of_moves[i].pos] = temp[1];
+        }
+
+        for (int i = lil; i < array_of_moves.size(); i++) {
+            switch (array_of_moves[i].g_t) {
+                case 100:
+              //      if(grid[array_of_moves[i].g_t].emblem == 'k') return -1000;
+                    temp[0] = grid[array_of_moves[i].g_t]; //i+1
+                    temp[1] = grid[array_of_moves[i].pos];
+
+                    grid[array_of_moves[i].g_t] = new piece('n', color_now, true);
+                    grid[array_of_moves[i].pos].emblem = '*';
+
+
+                    min_max = minmax(deep - 1, color_to_start, !color_now);
+                    if (min_max < min_or_max) min_or_max = min_max;
+
+
+                    grid[array_of_moves[i].g_t] = temp[0];
+                    grid[array_of_moves[i].pos] = temp[1];
+                    break;
+                case 101:
+                //    if(grid[array_of_moves[i].g_t].emblem == 'k') return -1000;
+                    temp[0] = grid[array_of_moves[i].g_t];
+                    temp[1] = grid[array_of_moves[i].pos];
+
+                    grid[array_of_moves[i].g_t] = new piece('q', color_now, true);
+                    grid[array_of_moves[i].pos].emblem = '*';
+
+
+                    min_max = minmax(deep - 1, color_to_start, !color_now);
+                    if (min_max < min_or_max) min_or_max = min_max;
+
+
+                    grid[array_of_moves[i].g_t] = temp[0];
+                    grid[array_of_moves[i].pos] = temp[1];
+                    break;
+                case 66:
+                    if (color_now) {
+                        grid[4].emblem = '*';
+                        grid[5] = new piece('r', color_now, true);
+                        grid[6] = new piece('k', color_now, true);
+                        grid[7].emblem = '*';
+                        min_max = minmax(deep - 1, color_to_start, !color_now);
+                        if (min_max < min_or_max) min_or_max = min_max;
+                        grid[4] = new piece('k', color_now, false);
+                        grid[5].emblem = '*';
+                        grid[6].emblem = '*';
+                        grid[60].emblem = '*';
+                        grid[63].emblem = '*';
+                        min_max = minmax(deep - 1, color_to_start, !color_now);
+                        if (min_max < min_or_max) min_or_max = min_max;
+                        grid[60] = grid[60];
+                        grid[60].is_moved = false;
+                        grid[63] = grid[61];
+                        grid[61].is_moved = false; // todo poprawspo
+                        grid[61].emblem = '*';
+                        grid[62].emblem = '*';
+
+                    }
+                    break;
+                case 666:
+                    if (color_now) {
+                        grid[2] = grid[4];
+                        grid[3] = grid[0];
+                        grid[0].emblem = '*';           /// todo  like this one but restxd
+                        grid[1].emblem = '*';
+                        grid[4].emblem = '*';
+                        min_max = minmax(deep - 1, color_to_start, !color_now);
+                        if (min_max < min_or_max) min_or_max = min_max;
+                        grid[0] = grid[3];
+                        grid[0].is_moved = false;
+                        grid[4] = grid[2];
+                        grid[4].is_moved = false;
+
+                        grid[1].emblem = '*';
+                        grid[2].emblem = '*';
+                        grid[3].emblem = '*';
+
+                    } else {
+                        grid[46].emblem = '*';
+                        grid[47].emblem = '*';
+                        grid[48] = new piece('k', color_now, true);
+                        grid[49] = new piece('r', color_now, true);
+                        grid[50].emblem = '*';
+                        min_max = minmax(deep - 1, color_to_start, !color_now);
+                        if (min_max < min_or_max) min_or_max = min_max;
+                        grid[46] = new piece('r', color_now, false);
+                        grid[47].emblem = '*';
+                        grid[48].emblem = '*';
+                        grid[49].emblem = '*';
+                        grid[50] = new piece('k', color_now, false);
+                    }
+                    break;
+                default:
+                    int osem = -8;
+                    if (color_now) osem = 8;
+
+                    temp[0] = grid[array_of_moves[i].g_t + osem];
+                    temp[1] = grid[array_of_moves[i].pos];
+
+                    grid[array_of_moves[i].g_t] = grid[i];
+                    grid[array_of_moves[i].g_t].is_moved = true;
+
+                    grid[array_of_moves[i].pos].emblem = '*';
+                    grid[array_of_moves[i].g_t + osem].emblem = '*';
+
+                    min_max = minmax(deep - 1, color_to_start, !color_now);
+                    if (min_max < min_or_max) min_or_max = min_max;
+
+                    grid[array_of_moves[i].g_t + osem] = temp[0];
+                    grid[array_of_moves[i].g_t].emblem = '*';
+                    grid[array_of_moves[i].pos] = temp[1];
+                    break;
+            }
+
+
+        }
+
+
+    }
+/*
+
+*/
 
     return min_or_max; //i guess they never max huh?
     // u've got a boyfriend i bet he never kiss ya?
@@ -1316,12 +1332,17 @@ arr board::stuff_with_lil_ones(bool color, int position) {
 
                 if (list_of_moves.back()[i] == 'p' && hold21 - hold54 == 16) {
 
-                    if (hold54 == position - 1 || hold54 == position + 1) {
+                    if (hold54 == position - 1 && position % 8 != 0){
 
                         possible_moves.push_back(position);
                         possible_moves.push_back(hold21 - 8);
-
                     }
+                    if(hold54 == position + 1 && position %8 !=7) {
+
+                        possible_moves.push_back(position);
+                        possible_moves.push_back(hold21 - 8);
+                    }
+
                 }
             }
             break;
@@ -1335,11 +1356,16 @@ arr board::stuff_with_lil_ones(bool color, int position) {
 
                 if (list_of_moves.back()[i] == 'p' && hold21 - hold54 == 16) {
 
-                    if (hold54 == position - 1 || hold54 == position + 1) {
+
+                    if (hold54 == position - 1 && position % 8 != 0){
 
                         possible_moves.push_back(position);
                         possible_moves.push_back(hold21 - 8);
+                    }
+                    if(hold54 == position + 1 && position %8 !=7) {
 
+                        possible_moves.push_back(position);
+                        possible_moves.push_back(hold21 - 8);
                     }
                 }
             }

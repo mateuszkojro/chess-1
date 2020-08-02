@@ -30,7 +30,7 @@ arr piece::possible(int position, piece *grid) {
     }
     int px = position / 8, py = position % 8;
 
-
+/*
     temp = grid[position].pin(position, grid);
 
 
@@ -38,12 +38,13 @@ arr piece::possible(int position, piece *grid) {
         if (temp[0] == -1) temp.clear();
         return temp;
     }
+*/
 
     switch (this->emblem) {
         case 'p':
 
             if (color) {   // czarne czyli \/
-                if (position / 8 != 6) {
+
                     if (grid[position + 8].emblem == '*') {
                         temp.push_back(position + 8);
                         if (!is_moved && grid[position + 16].emblem == '*') temp.push_back(position + 16);
@@ -54,25 +55,25 @@ arr piece::possible(int position, piece *grid) {
                         temp.push_back(position + 9);
                     if (py != 0 && grid[position + 7].emblem != '*' && grid[position + 7].color == !color)
                         temp.push_back(position + 7);
-                }
+
 
 
                 break;
             } else {
-                if (position / 8 != 1) {
+
                     if (grid[position - 8].emblem == '*') {
                         temp.push_back(position - 8);
                         if (!is_moved && grid[position - 16].emblem == '*')
                             temp.push_back(position - 16);
                     }
 
-                    if (py != 7 && grid[position - 9].emblem != '*' && grid[position - 9].color == !color)
+                    if (py != 0 && grid[position - 9].emblem != '*' && grid[position - 9].color == !color)
                         temp.push_back(position - 9);
-                    if (py != 0 && grid[position - 7].emblem != '*' && grid[position - 7].color == !color)
+                    if (py != 7 && grid[position - 7].emblem != '*' && grid[position - 7].color == !color)
                         temp.push_back(position - 7);
 
                 }
-            }
+
             break;
 
         case 'n': {
@@ -530,47 +531,25 @@ arr piece::possible(int position, piece *grid) {
                    i++)
                 if (grid[temp[i]].emblem != '*') {
                     if (grid[temp[i]].color == color)
-                        temp.
-                                erase(i, temp
-                                .
-
-                                        size()
-
-                        );
+                        temp.erase(i, temp.size());
                     else
-                        temp.
-                                erase(i
-                                      + 1, temp.
-
-                                size()
-
-                        );
+                        temp.erase(i+ 1, temp.size());
                     break;
 
                 }
 
             i = temp.size();
 
-            while (
-                    temp_x < 7 && 7 > temp_y
-                    )
+            while (temp_x < 7 && 7 > temp_y)
                 temp.push_back((++temp_x) * 8 + ++temp_y);
 
             temp_x = px;
             temp_y = py;
 
-            for (; i < temp.
-
-                    size();
-
-                   i++)
+            for (; i < temp.size();i++)
                 if (grid[temp[i]].emblem != '*') {
                     if (grid[temp[i]].color == color)
-                        temp.
-                                erase(i, temp
-                                .
-
-                                        size()
+                        temp.erase(i, temp.size()
 
                         );
                     else
@@ -854,11 +833,13 @@ bool piece::possible(int position, piece *grid, int go_to, bool pin) {
     int px = position / 8, py = position % 8, gx = go_to / 8, gy = go_to % 8;
 
     if (pin) {
+        /*
         arr row = grid[position].pin(position, grid);
         if (row.size() != 0) {
             if (row[0] == -1) return false;
             return binary(go_to, row);
         }
+ */
     }
 
 
@@ -1044,7 +1025,7 @@ bool piece::possible(int position, piece *grid, int go_to, bool pin) {
 
 
 }    //todo test it ;znaczy zwal to na elizę
-
+#if 1
 arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze kolorki figur przeciwnego teamu zrobiłeś
 
     arr possible_moves;
@@ -1476,7 +1457,40 @@ arr piece::pin(int position, piece *grid) { // todo weż sparawadz czy dobrze ko
     }
     return possible_moves;
 }
+#else
+arr piece::pin(int position, piece *grid){
+    arr possible_moves;
+    if (emblem == 'k') return possible_moves;
 
+    int px = position / 8, py = position % 8;
+
+    int king_x = 65, king_y = 65;
+
+    for (int i = 0; i < 64; i++) {
+        if (grid[i].emblem == 'k' && grid[i].color == color) {
+            king_x = i / 8;
+            king_y = i % 8;
+            break;
+
+        }
+
+    }
+    if (king_x == 65) return possible_moves;
+    if(px==king_x){
+        if(py==king_y)
+
+    }else{
+
+
+
+
+    }
+
+
+
+
+}
+#endif
 bool piece::check(int position, piece *grid) { // to da się zrobić lepiej
 #if 0
     int px = position / 8, py = position % 8;
