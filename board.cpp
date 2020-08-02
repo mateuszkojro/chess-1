@@ -44,6 +44,7 @@ char getch(){
 
 #define black true
 #define white false
+#define ABS(N) ((N<0)?(-N):(N))
 
 int ctn(char x, char y) {
     return ((static_cast<int>(x) - 56) * (-8)) + (static_cast<int>(y) - 97);
@@ -407,8 +408,8 @@ void board::admin() {
             case 'q':
                 return;
             case 'o':
-                for(int i=0;i<64;i++){
-                    grid[i].color =! grid[i].color;
+                for (int i = 0; i < 64; i++) {
+                    grid[i].color = !grid[i].color;
                 }
 
                 break;
@@ -871,18 +872,32 @@ void board::cvc(int deep) {
 
 double board::minmax(int deep, bool color_to_start, bool color_now) {
     int no_more_kings = 0;
+    int oposite_king_position;
     if (deep == 0) return this->evaluate();
-    for (int i = 0; i < 64; i++)
-        if (grid[i].emblem == 'k'){
-            if(grid[i].color) no_more_kings--;
-            else no_more_kings++;
-        }
+    if (color_now == black) {
+        for (int i = 0; i < 64; i++)
+            if (grid[i].emblem == 'k')
+                if (grid[i].color) no_more_kings--;
+                else {
+                    oposite_king_position = i;
+                    no_more_kings++;
+                }
+    } else {
+        for (int i = 0; i < 64; i++)
+            if (grid[i].emblem == 'k') {
+                if (grid[i].color) {
+                    oposite_king_position = i;
+                    no_more_kings--;
+                } else no_more_kings++;
+            }
 
+
+    }
     switch (no_more_kings) {
         case -1:
-            return -1000;
+            return -1069;
         case 1:
-            return 1000;
+            return 1069;
             //case 0:
             //  break;
     }
@@ -920,17 +935,23 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
 
     }
     /// evaluation & stuff
-    if (array_of_moves.empty())return 0;
+    int color_dependence = 1;
+    if (color_now == black)color_dependence = -1;
+    if (array_of_moves.empty()) {
+        if (grid[oposite_king_position].check(oposite_king_position, grid)) return 100000 * color_dependence;
+        return 0;
+    }
     piece temp[2];
     double min_or_max;
-    if(color_now)min_or_max = 10000000;
-    else min_or_max = -10000000;
+    min_or_max = 1000006999 * -color_dependence;
 
-    double min_max=0.0;
+
+    double min_max = 0.0;
     // reku dla
 
     if (color_now == white) {
         for (int i = 0; i < lil; i++) {
+
             //if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
 
             temp[0] = grid[array_of_moves[i].g_t];
@@ -943,17 +964,19 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
             grid[array_of_moves[i].pos].emblem = '*';
 
             min_max = minmax(deep - 1, color_to_start, !color_now);
+
             if (min_max > min_or_max) min_or_max = min_max;
 
             grid[array_of_moves[i].g_t] = temp[0];
 
             grid[array_of_moves[i].pos] = temp[1];
+            if (min_max>200) return 1000000;
         }
 
         for (int i = lil; i < array_of_moves.size(); i++) {
             switch (array_of_moves[i].g_t) {
                 case 100:
-              //      if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
+                    //      if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
                     temp[0] = grid[array_of_moves[i].g_t]; //i+1
                     temp[1] = grid[array_of_moves[i].pos];
 
@@ -965,9 +988,10 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
 
                     grid[array_of_moves[i].g_t] = temp[0];
                     grid[array_of_moves[i].pos] = temp[1];
+                    if (min_max>200) return 1000000;
                     break;
                 case 101:
-                //    if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
+                    //    if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
                     temp[0] = grid[array_of_moves[i].g_t];
                     temp[1] = grid[array_of_moves[i].pos];
 
@@ -979,6 +1003,7 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
 
                     grid[array_of_moves[i].g_t] = temp[0];
                     grid[array_of_moves[i].pos] = temp[1];
+                    if (min_max>200) return 1000000;
                     break;
                 case 66:
                     if (color_now) {
@@ -988,6 +1013,7 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
                         grid[7].emblem = '*';
 
                         min_max = minmax(deep - 1, color_to_start, !color_now);
+
                         if (min_max > min_or_max) min_or_max = min_max;
 
                         grid[4] = new piece('k', color_now, false);
@@ -1067,6 +1093,7 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
                     grid[array_of_moves[i].g_t + osem] = temp[0];
                     grid[array_of_moves[i].g_t].emblem = '*';
                     grid[array_of_moves[i].pos] = temp[1];
+                    if (min_max>200) return 1000000;
                     break;
             }
 
@@ -1092,12 +1119,13 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
             grid[array_of_moves[i].g_t] = temp[0];
 
             grid[array_of_moves[i].pos] = temp[1];
+            if (min_max < -200) return -1000000;
         }
 
         for (int i = lil; i < array_of_moves.size(); i++) {
             switch (array_of_moves[i].g_t) {
                 case 100:
-              //      if(grid[array_of_moves[i].g_t].emblem == 'k') return -1000;
+                    //      if(grid[array_of_moves[i].g_t].emblem == 'k') return -1000;
                     temp[0] = grid[array_of_moves[i].g_t]; //i+1
                     temp[1] = grid[array_of_moves[i].pos];
 
@@ -1111,9 +1139,10 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
 
                     grid[array_of_moves[i].g_t] = temp[0];
                     grid[array_of_moves[i].pos] = temp[1];
+                    if (min_max < -200) return -1000000;
                     break;
                 case 101:
-                //    if(grid[array_of_moves[i].g_t].emblem == 'k') return -1000;
+                    //    if(grid[array_of_moves[i].g_t].emblem == 'k') return -1000;
                     temp[0] = grid[array_of_moves[i].g_t];
                     temp[1] = grid[array_of_moves[i].pos];
 
@@ -1127,6 +1156,7 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
 
                     grid[array_of_moves[i].g_t] = temp[0];
                     grid[array_of_moves[i].pos] = temp[1];
+                    if (min_max < -200) return -1000000;
                     break;
                 case 66:
                     if (color_now) {
@@ -1139,6 +1169,8 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
                         grid[4] = new piece('k', color_now, false);
                         grid[5].emblem = '*';
                         grid[6].emblem = '*';
+
+
                         grid[60].emblem = '*';
                         grid[63].emblem = '*';
                         min_max = minmax(deep - 1, color_to_start, !color_now);
@@ -1204,6 +1236,7 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
                     grid[array_of_moves[i].g_t + osem] = temp[0];
                     grid[array_of_moves[i].g_t].emblem = '*';
                     grid[array_of_moves[i].pos] = temp[1];
+                    if (min_max < -200) return -1000000;
                     break;
             }
 
@@ -1332,12 +1365,12 @@ arr board::stuff_with_lil_ones(bool color, int position) {
 
                 if (list_of_moves.back()[i] == 'p' && hold21 - hold54 == 16) {
 
-                    if (hold54 == position - 1 && position % 8 != 0){
+                    if (hold54 == position - 1 && position % 8 != 0) {
 
                         possible_moves.push_back(position);
                         possible_moves.push_back(hold21 - 8);
                     }
-                    if(hold54 == position + 1 && position %8 !=7) {
+                    if (hold54 == position + 1 && position % 8 != 7) {
 
                         possible_moves.push_back(position);
                         possible_moves.push_back(hold21 - 8);
@@ -1357,12 +1390,12 @@ arr board::stuff_with_lil_ones(bool color, int position) {
                 if (list_of_moves.back()[i] == 'p' && hold21 - hold54 == 16) {
 
 
-                    if (hold54 == position - 1 && position % 8 != 0){
+                    if (hold54 == position - 1 && position % 8 != 0) {
 
                         possible_moves.push_back(position);
                         possible_moves.push_back(hold21 - 8);
                     }
-                    if(hold54 == position + 1 && position %8 !=7) {
+                    if (hold54 == position + 1 && position % 8 != 7) {
 
                         possible_moves.push_back(position);
                         possible_moves.push_back(hold21 - 8);
