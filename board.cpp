@@ -2353,18 +2353,10 @@ array board::array_of_possible(int position) {
 
             before_processing = this->full_board_of_moves_4_rook[position];
 
-            for(int i=0;i<before_processing.size();i++){
-                for(int j=0;j<before_processing[i].size();j++){
-                    printf("%d ",before_processing[i][j]);
-
-                }
-                printf("\t%d<->size%d\n",i,before_processing[i].size());
-            }
-            printf("%d<<<<<\n",before_processing.size());
 
             for (int i = 0; i < before_processing.size(); i++) {
                 for (int j = 0; j < before_processing[i].size(); j++) {
-                    printf(">%d<>%d<>%c<\n",i,j,grid[before_processing[i][j]].emblem);
+
 
                     if (grid[before_processing[i][j]].emblem != '*') {
                         if (grid[before_processing[i][j]].color != color)
@@ -2375,11 +2367,7 @@ array board::array_of_possible(int position) {
 
                 }
             }
-            printf("akay then : ");
-            for(int i=0;i<all_of_possible_moves.size();i++)
-                printf("%d ",all_of_possible_moves[i]);
 
-            printf("\n");
 
         }
 
@@ -2524,85 +2512,86 @@ bool board::possible(int position, int go_to) {
         }
             break;
         case 'n': {
-            int temp[8] = {position - 17, position - 15, position - 10, position - 6, position + 6, position + 10,
+            int all_of_possible_moves[8] = {position - 17, position - 15, position - 10, position - 6, position + 6, position + 10,
                            position + 15, position + 17};
-            return binary(go_to, temp);
+            return binary(go_to, all_of_possible_moves);
         }
             break;
         case 'k': {
-            int temp[8] = {position - 9, position - 8, position - 7, position - 1, position + 1, position + 7,
+            int all_of_possible_moves[8] = {position - 9, position - 8, position - 7, position - 1, position + 1, position + 7,
                            position + 8,
                            position + 9};
-            return binary(go_to, temp);
+            return binary(go_to, all_of_possible_moves);
         }
             break;
         case 'q': {
 
-/// ok nowy plan
+
             int b = px + py;
             ///         / <-this one
             if (b == gy + gx) {
-                array temp;
-                int temp_x = px, temp_y = py;
-
-                if (gy < py) while (temp_x < 7 && 0 < temp_y) temp.push_back((++temp_x) * 8 + --temp_y);
-                else while (temp_x > 0 && 7 > temp_y)temp.push_back((--temp_x) * 8 + ++temp_y);
+                array all_of_possible_moves;
 
 
-                for (int i = 0; i < temp.size(); i++) {
-                    if (grid[temp[i]].emblem != '*')
-                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                if (gy < py) all_of_possible_moves = full_board_of_moves_4_bishop[position][2];
+                else all_of_possible_moves = full_board_of_moves_4_bishop[position][0];
+
+
+                for (int i = 0; i < all_of_possible_moves.size(); i++) {
+                    if (grid[all_of_possible_moves[i]].emblem != '*')
+                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
                         else return false;
-                    if (temp[i] == go_to) return true;
+                    if (all_of_possible_moves[i] == go_to) return true;
                 }
             }
 
             /// \ <-this one
             b = py - px;
             if (b + gx == gy) {// lg to pd
-                array temp;
+                array all_of_possible_moves;
 
-                int temp_x = px, temp_y = py;
+
                 /// tu idziemy do góry
-                if (gy < py) while (temp_x > 0 && 0 < temp_y) temp.push_back((--temp_x) * 8 + --temp_y);
-                else while (temp_x < 7 && 7 > temp_y) temp.push_back((++temp_x) * 8 + ++temp_y);
+                if (gy < py) all_of_possible_moves = full_board_of_moves_4_bishop[position][3];
+
+                else all_of_possible_moves = full_board_of_moves_4_bishop[position][1];
 
 
-                for (int i = 0; i < temp.size(); i++) {
-                    if (grid[temp[i]].emblem != '*')
-                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                for (int i = 0; i < all_of_possible_moves.size(); i++) {
+                    if (grid[all_of_possible_moves[i]].emblem != '*')
+                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
                         else return false;
-                    if (temp[i] == go_to) return true;
+                    if (all_of_possible_moves[i] == go_to) return true;
                 }
 
             }
 
 
             if (px == gx) {
-                array temp;
-                if (py > gy) for (int z = py - 1; z >= 0; z--) temp.push_back(px * 8 + z);
-                else for (int z = py + 1; z < 8; z++) temp.push_back(px * 8 + z);
+                array all_of_possible_moves;
+                if (py > gy) all_of_possible_moves = full_board_of_moves_4_rook[position][2];
+                else all_of_possible_moves = full_board_of_moves_4_rook[position][0];
 
 
-                for (int i = 0; i < temp.size(); i++) {
-                    if (grid[temp[i]].emblem != '*')
-                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                for (int i = 0; i < all_of_possible_moves.size(); i++) {
+                    if (grid[all_of_possible_moves[i]].emblem != '*')
+                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
                         else return false;
-                    if (temp[i] == go_to) return true;
+                    if (all_of_possible_moves[i] == go_to) return true;
                 }
             }
             if (py == gy) {
 
-                array temp;
+                array all_of_possible_moves;
 
-                if (px > gx) for (int z = px - 1; z >= 0; z--) temp.push_back(z * 8 + py);
-                else for (int z = px + 1; z < 8; z++) temp.push_back(z * 8 + py);
+                if (px > gx) all_of_possible_moves = full_board_of_moves_4_rook[position][3];
+                else all_of_possible_moves = full_board_of_moves_4_rook[position][1];
 
-                for (int i = 0; i < temp.size(); i++) {
-                    if (grid[temp[i]].emblem != '*')
-                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                for (int i = 0; i < all_of_possible_moves.size(); i++) {
+                    if (grid[all_of_possible_moves[i]].emblem != '*')
+                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
                         else return false;
-                    if (temp[i] == go_to) return true;
+                    if (all_of_possible_moves[i] == go_to) return true;
                 }
             }
         }
@@ -2612,37 +2601,38 @@ bool board::possible(int position, int go_to) {
             int b = px + py;
             ///         / <-this one
             if (b == gy + gx) {
-                array temp;
-                int temp_x = px, temp_y = py;
-
-                if (gy < py) while (temp_x < 7 && 0 < temp_y) temp.push_back((++temp_x) * 8 + --temp_y);
-                else while (temp_x > 0 && 7 > temp_y)temp.push_back((--temp_x) * 8 + ++temp_y);
+                array all_of_possible_moves;
 
 
-                for (int i = 0; i < temp.size(); i++) {
-                    if (grid[temp[i]].emblem != '*')
-                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                if (gy < py) all_of_possible_moves = full_board_of_moves_4_bishop[position][2];
+                else all_of_possible_moves = full_board_of_moves_4_bishop[position][0];
+
+
+                for (int i = 0; i < all_of_possible_moves.size(); i++) {
+                    if (grid[all_of_possible_moves[i]].emblem != '*')
+                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
                         else return false;
-                    if (temp[i] == go_to) return true;
+                    if (all_of_possible_moves[i] == go_to) return true;
                 }
             }
 
             /// \ <-this one
             b = py - px;
             if (b + gx == gy) {// lg to pd
-                array temp;
+                array all_of_possible_moves;
 
-                int temp_x = px, temp_y = py;
+
                 /// tu idziemy do góry
-                if (gy < py) while (temp_x > 0 && 0 < temp_y) temp.push_back((--temp_x) * 8 + --temp_y);
-                else while (temp_x < 7 && 7 > temp_y) temp.push_back((++temp_x) * 8 + ++temp_y);
+                if (gy < py) all_of_possible_moves = full_board_of_moves_4_bishop[position][3];
+
+                else all_of_possible_moves = full_board_of_moves_4_bishop[position][1];
 
 
-                for (int i = 0; i < temp.size(); i++) {
-                    if (grid[temp[i]].emblem != '*')
-                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                for (int i = 0; i < all_of_possible_moves.size(); i++) {
+                    if (grid[all_of_possible_moves[i]].emblem != '*')
+                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
                         else return false;
-                    if (temp[i] == go_to) return true;
+                    if (all_of_possible_moves[i] == go_to) return true;
                 }
 
             }
@@ -2650,36 +2640,32 @@ bool board::possible(int position, int go_to) {
             break;
         case 'r': {
             if (px == gx) {
-
-                array temp;
-
-                if (py > gy) for (int z = py - 1; z >= 0; z--) temp.push_back(px * 8 + z);
-                else for (int z = py + 1; z < 8; z++) temp.push_back(px * 8 + z);
+                array all_of_possible_moves;
+                if (py > gy) all_of_possible_moves = full_board_of_moves_4_rook[position][2];
+                else all_of_possible_moves = full_board_of_moves_4_rook[position][0];
 
 
-                for (int i = 0; i < temp.size(); i++) {
-                    if (grid[temp[i]].emblem != '*')
-                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                for (int i = 0; i < all_of_possible_moves.size(); i++) {
+                    if (grid[all_of_possible_moves[i]].emblem != '*')
+                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
                         else return false;
-                    if (temp[i] == go_to) return true;
+                    if (all_of_possible_moves[i] == go_to) return true;
                 }
             }
             if (py == gy) {
 
-                array temp;
+                array all_of_possible_moves;
 
-                if (px > gx) for (int z = px - 1; z >= 0; z--) temp.push_back(z * 8 + py);
-                else for (int z = px + 1; z < 8; z++) temp.push_back(z * 8 + py);
+                if (px > gx) all_of_possible_moves = full_board_of_moves_4_rook[position][3];
+                else all_of_possible_moves = full_board_of_moves_4_rook[position][1];
 
-                for (int i = 0; i < temp.size(); i++) {
-                    if (grid[temp[i]].emblem != '*')
-                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                for (int i = 0; i < all_of_possible_moves.size(); i++) {
+                    if (grid[all_of_possible_moves[i]].emblem != '*')
+                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
                         else return false;
-                    if (temp[i] == go_to) return true;
+                    if (all_of_possible_moves[i] == go_to) return true;
                 }
-
             }
-
         }
             break;
 

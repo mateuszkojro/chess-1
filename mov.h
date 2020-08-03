@@ -183,7 +183,8 @@ public:
         return tab[pos];
     }
 
-    dynamic_arr &operator=(dynamic_arr a) {
+    dynamic_arr &operator=(dynamic_arr &a) {
+        tab = new T[a.siz];
         this->siz = a.siz;
         for (int i = 0; i < a.siz; i++)this->tab[i] = a.tab[i];
         return *this;
