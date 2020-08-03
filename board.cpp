@@ -42,16 +42,46 @@ char getch(){
 #include "board.h"
 
 
-#define black true
-#define white false
-#define ABS(N) ((N<0)?(-N):(N))
+#define BLACK true
+#define WHITE false
 
 int ctn(char x, char y) {
     return ((static_cast<int>(x) - 56) * (-8)) + (static_cast<int>(y) - 97);
 }
 
+bool binary(int check, int tab[8]) {
+    int l = 0, r = 7;
 
-int max(dynamic_arr row) {
+    while (l <= r) {
+        int m = l + (r - l) / 2;
+        if (tab[m] == check)
+            return true;
+
+        if (tab[m] < check)
+            l = m + 1;
+        else
+            r = m - 1;
+    }
+    return false;
+}
+
+bool binary(int check, array tab) {
+    int l = 0, r = tab.size();
+
+    while (l <= r) {
+        int m = l + (r - l) / 2;
+        if (tab[m] == check)
+            return true;
+
+        if (tab[m] < check)
+            l = m + 1;
+        else
+            r = m - 1;
+    }
+    return false;
+}
+
+int max(dynamic_arr<mov> row) {
     int k = 0;
     for (int i = 1; i < row.size(); ++i) {
         if (row[i].eva > row[k].eva) k = i;
@@ -59,7 +89,7 @@ int max(dynamic_arr row) {
     return k;
 }
 
-int min(dynamic_arr row) {
+int min(dynamic_arr<mov> row) {
     int k = 0;
     for (int i = 1; i < row.size(); ++i) {
         if (row[i].eva < row[k].eva) k = i;
@@ -118,9 +148,9 @@ int board::move(bool color) {
                         if (grid[0].is_moved == 0 && grid[4].is_moved == 0) {
                             for (int i = 0; i < 64; i++) {
                                 if (grid[i].color != color)
-                                    if (grid[i].possible(i, grid, 0, true) || grid[i].possible(i, grid, 1, true) ||
-                                        grid[i].possible(i, grid, 2, true) || grid[i].possible(i, grid, 3, true) ||
-                                        grid[i].possible(i, grid, 4, true))
+                                    if (this->possible(i, 0) || this->possible(i, 1) ||
+                                        this->possible(i, 2) || this->possible(i, 3) ||
+                                        this->possible(i, 4))
                                         break;
                                 if (i == 63) {
                                     grid[0] = new piece();
@@ -146,9 +176,9 @@ int board::move(bool color) {
                         if (grid[56].is_moved == 0 && grid[60].is_moved == 0) {
                             for (int i = 0; i < 64; i++) {
                                 if (grid[i].color != color)
-                                    if (grid[i].possible(i, grid, 56, true) || grid[i].possible(i, grid, 57, true) ||
-                                        grid[i].possible(i, grid, 58, true) || grid[i].possible(i, grid, 59, true) ||
-                                        grid[i].possible(i, grid, 60, true))
+                                    if (this->possible(i, 56) || this->possible(i, 57) ||
+                                        this->possible(i, 58) || this->possible(i, 59) ||
+                                        this->possible(i, 60))
                                         break;
                                 if (i == 63) {
                                     grid[56] = new piece();
@@ -179,14 +209,14 @@ int board::move(bool color) {
                         if (grid[7].is_moved == 0 && grid[4].is_moved == 0) {
                             for (int i = 0; i < 64; i++) {
                                 if (grid[i].color != color)
-                                    if (grid[i].possible(i, grid, 4, true) || grid[i].possible(i, grid, 5, true) ||
-                                        grid[i].possible(i, grid, 6, true) || grid[i].possible(i, grid, 7, true))
+                                    if (this->possible(i, 4) || this->possible(i, 5) ||
+                                        this->possible(i, 6) || this->possible(i, 7))
                                         break;
                                 if (i == 63) {
                                     grid[7] = new piece();
                                     grid[4] = new piece();
                                     grid[5] = new piece('r', color, true);
-                                    grid[6] = new piece('k', color, true);
+                                    grid[6] = new piece('k', color);
 
                                     list_of_moves.back().push_back('o');
                                     list_of_moves.back().push_back('-');
@@ -202,8 +232,8 @@ int board::move(bool color) {
                         if (grid[63].is_moved == 0 && grid[60].is_moved == 0) {
                             for (int i = 0; i < 64; i++) {
                                 if (grid[i].color != color)
-                                    if (grid[i].possible(i, grid, 60, true) || grid[i].possible(i, grid, 61, true) ||
-                                        grid[i].possible(i, grid, 62, true) || grid[i].possible(i, grid, 63, true))
+                                    if (this->possible(i, 60) || this->possible(i, 61) ||
+                                        this->possible(i, 62) || this->possible(i, 63))
                                         break;
                                 if (i == 63) {
                                     grid[63] = new piece();
@@ -241,7 +271,7 @@ int board::move(bool color) {
                     printf("opsie illegal move!");
                     break;
                 }
-                if (!grid[position].possible(position, grid, go_to, true)) { // todo tutaj daj bicie w przelocie
+                if (!this->possible(position, go_to)) { // todo tutaj daj bicie w przelocie
 
 
 
@@ -429,19 +459,7 @@ void board::admin() {
                 grid[ctn(temp[3], temp[2])] = new piece(
                         temp[1], static_cast<int>(temp[4]) - 48);
                 break;
-            case 'b': {
 
-                arr legal;
-                legal = grid[ctn(temp[2], temp[1])].pin(ctn(temp[2], temp[1]), grid);
-                for (int i = 0; i < legal.size(); i++) {
-
-                    printf("%c%d  ", (char) legal[i] % 8 + 97, ((legal[i] / 8) - 8) * (-1));
-
-                }
-                printf(" >%d<\n", legal.size());
-
-                do_it = false;
-            }
                 break;
             case 'c':
                 for (int i = 0; i < 64; ++i) grid[i] = new piece();
@@ -461,11 +479,11 @@ void board::admin() {
                 break;
             case 'p': {
                 if (temp.size() == 5)
-                    printf("%d ", (grid[ctn(temp[2], temp[1])].possible(
-                            ctn(temp[2], temp[1]), grid,
-                            ctn(temp[4], temp[3]), true)));
+                    printf("%d ", (this->possible(
+                            ctn(temp[2], temp[1]),
+                            ctn(temp[4], temp[3]))));
                 else {
-                    arr legal = grid[ctn(temp[2], temp[1])].possible(ctn(temp[2], temp[1]), grid);
+                    array legal = this->array_of_possible(ctn(temp[2], temp[1]));
                     if (temp.size() == 4 && temp[3] == 's') {
                         std::vector<char> char_legal;
                         std::vector<bool> color_legal;
@@ -563,8 +581,8 @@ void board::pvp() {
     std::string temp = "white\tblack\n";
     if (list_of_moves.empty())list_of_moves.push_back(temp);
     while (1 < 2) {
-        if (list_of_moves.back().back() == '\n') color = black;
-        else if (list_of_moves.back().back() == '\t') color = white;
+        if (list_of_moves.back().back() == '\n') color = BLACK;
+        else if (list_of_moves.back().back() == '\t') color = WHITE;
         else printf("error!");
         for (int i = 0; i < 64; i++) if (grid[i].emblem == 'k') grid[i].color ? (sum--) : (sum++);
         if (sum != 0) break;
@@ -604,62 +622,62 @@ double board::evaluate() { // k q r b n p
     }
     for (int i = 0; i < 64; i++) {
 
-        b_moves += castle(black).size();
-        w_moves += castle(white).size();
+        b_moves += castle(BLACK).size();
+        w_moves += castle(WHITE).size();
 
         switch (grid[i].emblem) {
             case 'k':
                 if (grid[i].color) {
                     b_tab[0]++;
-                    b_moves += grid[i].possible(i, grid).size();
+                    b_moves += this->array_of_possible(i).size();
                 } else {
                     w_tab[0]++;
-                    w_moves += grid[i].possible(i, grid).size();
+                    w_moves += this->array_of_possible(i).size();
                 }
                 break;
             case 'q':
                 if (grid[i].color) {
                     b_tab[1]++;
-                    b_moves += grid[i].possible(i, grid).size();
+                    b_moves += this->array_of_possible(i).size();
                 } else {
                     w_tab[1]++;
-                    w_moves += grid[i].possible(i, grid).size();
+                    w_moves += this->array_of_possible(i).size();
                 }
                 break;
             case 'r':
                 if (grid[i].color) {
                     b_tab[2]++;
-                    b_moves += grid[i].possible(i, grid).size();
+                    b_moves += this->array_of_possible(i).size();
                 } else {
                     w_tab[2]++;
-                    w_moves += grid[i].possible(i, grid).size();
+                    w_moves += this->array_of_possible(i).size();
                 }
                 break;
             case 'b':
                 if (grid[i].color) {
                     b_tab[3]++;
-                    b_moves += grid[i].possible(i, grid).size();
+                    b_moves += this->array_of_possible(i).size();
                 } else {
                     w_tab[3]++;
-                    w_moves += grid[i].possible(i, grid).size();
+                    w_moves += this->array_of_possible(i).size();
                 }
                 break;
             case 'n':
                 if (grid[i].color) {
                     b_tab[4]++;
-                    b_moves += grid[i].possible(i, grid).size();
+                    b_moves += this->array_of_possible(i).size();
                 } else {
                     w_tab[4]++;
-                    w_moves += grid[i].possible(i, grid).size();
+                    w_moves += this->array_of_possible(i).size();
                 }
                 break;
             case 'p':
                 if (grid[i].color) {
                     b_tab[5]++;
-                    b_moves += grid[i].possible(i, grid).size();
+                    b_moves += this->array_of_possible(i).size();
                 } else {
                     w_tab[5]++;
-                    w_moves += grid[i].possible(i, grid).size();
+                    w_moves += this->array_of_possible(i).size();
                 }
                 break;
             default:
@@ -682,11 +700,11 @@ void board::pvc() {}
 mov board::bip(bool color, int deepth) {
 
     //std::vector<int> temp_moves;
-    dynamic_arr tab_of_possible_moves;
-    arr temp_moves;
+    dynamic_arr<mov> tab_of_possible_moves;
+    array temp_moves;
     for (int i = 0; i < 64; ++i) {
         if (grid[i].emblem != '*' && grid[i].color == color) {
-            temp_moves = grid[i].possible(i, grid);
+            temp_moves = this->array_of_possible(i);
             for (int j = 0; j < temp_moves.size(); j++) {
                 mov tp(i, temp_moves[j], 0);
                 tab_of_possible_moves.push_back(tp);
@@ -852,7 +870,7 @@ void board::cvc(int deep) {
 
     bool color = false;
     int sum = 0;
-    std::string temp = "white\tblack\n";
+    std::string temp = "WHITE\tblack\n";
     if (list_of_moves.empty())list_of_moves.push_back(temp);
     std::vector<int> temp_moves;
     std::vector<mov> tab_of_possible_moves;
@@ -874,7 +892,7 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
     int no_more_kings = 0;
     int oposite_king_position;
     if (deep == 0) return this->evaluate();
-    if (color_now == black) {
+    if (color_now == BLACK) {
         for (int i = 0; i < 64; i++)
             if (grid[i].emblem == 'k')
                 if (grid[i].color) no_more_kings--;
@@ -902,13 +920,13 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
             //  break;
     }
 
-    arr temp_moves;
-    dynamic_arr array_of_moves;
+    array temp_moves;
+    dynamic_arr<mov> array_of_moves;
     //todo minmax jest pojebany i ty go źle napisałeś bo jesteś głupi
 
     for (int i = 0; i < 64; ++i) {
         if (grid[i].emblem != '*' && grid[i].color == color_now) {
-            temp_moves = grid[i].possible(i, grid);
+            temp_moves = this->array_of_possible(i);
             for (int j = 0; j < temp_moves.size(); j++) {
                 mov tp(i, temp_moves[j], 0);
                 array_of_moves.push_back(tp);
@@ -936,9 +954,9 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
     }
     /// evaluation & stuff
     int color_dependence = 1;
-    if (color_now == black)color_dependence = -1;
+    if (color_now == BLACK)color_dependence = -1;
     if (array_of_moves.empty()) {
-        if (grid[oposite_king_position].check(oposite_king_position, grid)) return 100000 * color_dependence;
+        if (this->check(oposite_king_position)) return 100000 * color_dependence;
         return 0;
     }
     piece temp[2];
@@ -949,7 +967,7 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
     double min_max = 0.0;
     // reku dla
 
-    if (color_now == white) {
+    if (color_now == WHITE) {
         for (int i = 0; i < lil; i++) {
 
             //if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
@@ -970,7 +988,7 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
             grid[array_of_moves[i].g_t] = temp[0];
 
             grid[array_of_moves[i].pos] = temp[1];
-            if (min_max>200) return 1000000;
+            if (min_max > 200) return 1000000;
         }
 
         for (int i = lil; i < array_of_moves.size(); i++) {
@@ -988,7 +1006,7 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
 
                     grid[array_of_moves[i].g_t] = temp[0];
                     grid[array_of_moves[i].pos] = temp[1];
-                    if (min_max>200) return 1000000;
+                    if (min_max > 200) return 1000000;
                     break;
                 case 101:
                     //    if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
@@ -1003,7 +1021,7 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
 
                     grid[array_of_moves[i].g_t] = temp[0];
                     grid[array_of_moves[i].pos] = temp[1];
-                    if (min_max>200) return 1000000;
+                    if (min_max > 200) return 1000000;
                     break;
                 case 66:
                     if (color_now) {
@@ -1093,7 +1111,7 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
                     grid[array_of_moves[i].g_t + osem] = temp[0];
                     grid[array_of_moves[i].g_t].emblem = '*';
                     grid[array_of_moves[i].pos] = temp[1];
-                    if (min_max>200) return 1000000;
+                    if (min_max > 200) return 1000000;
                     break;
             }
 
@@ -1276,17 +1294,17 @@ void board::admin_l(std::string temp) {
 
 }
 
-arr board::castle(bool color) {
-    arr possible_moves;
+array board::castle(bool color) {
+    array possible_moves;
     if (color) {
         if (grid[0].emblem == 'r' && grid[1].emblem == '*' && grid[2].emblem == '*' && grid[3].emblem == '*' &&
             grid[4].emblem == 'k')
             if (grid[0].is_moved == 0 && grid[4].is_moved == 0) {
                 for (int i = 0; i < 64; i++) {
                     if (grid[i].color != color)
-                        if (grid[i].possible(i, grid, 0, true) || grid[i].possible(i, grid, 1, true) ||
-                            grid[i].possible(i, grid, 2, true) || grid[i].possible(i, grid, 3, true) ||
-                            grid[i].possible(i, grid, 4, true))
+                        if (this->possible(i, 0) || this->possible(i, 1) ||
+                            this->possible(i, 2) || this->possible(i, 3) ||
+                            this->possible(i, 4))
                             break;
                     if (i == 63) {
                         possible_moves.push_back(666);
@@ -1299,9 +1317,9 @@ arr board::castle(bool color) {
             if (grid[56].is_moved == 0 && grid[60].is_moved == 0) {
                 for (int i = 0; i < 64; i++) {
                     if (grid[i].color != color)
-                        if (grid[i].possible(i, grid, 56, true) || grid[i].possible(i, grid, 57, true) ||
-                            grid[i].possible(i, grid, 58, true) || grid[i].possible(i, grid, 59, true) ||
-                            grid[i].possible(i, grid, 60, true))
+                        if (this->possible(i, 56) || this->possible(i, 57) ||
+                            this->possible(i, 58) || this->possible(i, 59) ||
+                            this->possible(i, 60))
                             break;
                     if (i == 63) {
                         possible_moves.push_back(666);
@@ -1315,8 +1333,8 @@ arr board::castle(bool color) {
             if (grid[7].is_moved == 0 && grid[4].is_moved == 0) {
                 for (int i = 0; i < 64; i++) {
                     if (grid[i].color != color)
-                        if (grid[i].possible(i, grid, 4, true) || grid[i].possible(i, grid, 5, true) ||
-                            grid[i].possible(i, grid, 6, true) || grid[i].possible(i, grid, 7, true))
+                        if (this->possible(i, 4) || this->possible(i, 5) ||
+                            this->possible(i, 6) || this->possible(i, 7))
                             break;
                     if (i == 63) {
                         possible_moves.push_back(66);
@@ -1328,8 +1346,8 @@ arr board::castle(bool color) {
             if (grid[63].is_moved == 0 && grid[60].is_moved == 0) {
                 for (int i = 0; i < 64; i++) {
                     if (grid[i].color != color)
-                        if (grid[i].possible(i, grid, 60, true) || grid[i].possible(i, grid, 61, true) ||
-                            grid[i].possible(i, grid, 62, true) || grid[i].possible(i, grid, 63, true))
+                        if (this->possible(i, 60) || this->possible(i, 61) ||
+                            this->possible(i, 62) || this->possible(i, 63))
                             break;
                     if (i == 63) {
                         possible_moves.push_back(66);
@@ -1337,18 +1355,18 @@ arr board::castle(bool color) {
                 }
             }
     }
-    /// ok więć to jest tak weź to i wklaej do bool possible  i to będzie lepszze tam
+    /// ok więć to jest tak weź to i wklaej do bool array_of_possible  i to będzie lepszze tam
     /// na na na pierdolić
     return possible_moves;
 
 }
 
-arr board::stuff_with_lil_ones(bool color, int position) {
-    arr possible_moves;
+array board::stuff_with_lil_ones(bool color, int position) {
+    array possible_moves;
 
     switch (position / 8) {
         case 1:
-            if (!color && grid[position].possible(position, grid, position - 8)) {
+            if (!color && this->possible(position, position - 8)) {
                 possible_moves.push_back(position);
                 possible_moves.push_back(100);
                 possible_moves.push_back(position);
@@ -1404,7 +1422,7 @@ arr board::stuff_with_lil_ones(bool color, int position) {
             }
             break;
         case 6:
-            if (color && grid[position].possible(position, grid, position + 8)) {
+            if (color && this->possible(position, position + 8)) {
                 possible_moves.push_back(position);
                 possible_moves.push_back(100);
                 possible_moves.push_back(position);
@@ -1416,3 +1434,1790 @@ arr board::stuff_with_lil_ones(bool color, int position) {
     }
     return possible_moves;
 }
+
+array board::array_of_possible(int position) {
+#if 0
+    array temp;
+    if (grid[position].emblem == '*') {
+        printf("error, it's not a pown \n");
+        return temp;
+    }
+    int px = position / 8, py = position % 8;
+
+/*
+    temp = grid[position].pin(position, grid);
+
+
+    if (!temp.empty()) {
+        if (temp[0] == -1) temp.clear();
+        return temp;
+    }
+*/
+
+    switch (this->emblem) {
+        case 'p':
+
+            if (color) {   // czarne czyli \/
+
+                if (grid[position + 8].emblem == '*') {
+                    temp.push_back(position + 8);
+                    if (!is_moved && grid[position + 16].emblem == '*') temp.push_back(position + 16);
+
+                }
+
+                if (py != 7 && grid[position + 9].emblem != '*' && grid[position + 9].color == !color)
+                    temp.push_back(position + 9);
+                if (py != 0 && grid[position + 7].emblem != '*' && grid[position + 7].color == !color)
+                    temp.push_back(position + 7);
+
+
+
+                break;
+            } else {
+
+                if (grid[position - 8].emblem == '*') {
+                    temp.push_back(position - 8);
+                    if (!is_moved && grid[position - 16].emblem == '*')
+                        temp.push_back(position - 16);
+                }
+
+                if (py != 0 && grid[position - 9].emblem != '*' && grid[position - 9].color == !color)
+                    temp.push_back(position - 9);
+                if (py != 7 && grid[position - 7].emblem != '*' && grid[position - 7].color == !color)
+                    temp.push_back(position - 7);
+
+            }
+
+            break;
+
+        case 'n': {
+
+            temp[0] = position - 15;
+            temp[1] = position - 17;
+            temp[2] = position - 6;
+            temp[3] = position - 10;
+            temp[4] = position + 15;
+            temp[5] = position + 17;
+            temp[6] = position + 6;
+            temp[7] = position + 10;
+            temp.size(8);
+
+
+            switch (py) {
+                case 0:
+                    temp[1] = -101;
+                    temp[3] = -101;
+                    temp[4] = -101;
+                    temp[6] = -101;
+                    temp.rejects(4);
+                    break;
+                case 1:
+
+                    temp[3] = -101;
+                    temp[6] = -101;
+                    temp.rejects(2);
+
+                    break;
+                case 6:
+
+                    temp[2] = -101;
+                    temp[7] = -101;
+
+                    temp.rejects(2);
+
+                    break;
+                case 7:
+
+                    temp[0] = -101;
+                    temp[2] = -101;
+                    temp[5] = -101;
+                    temp[7] = -101;
+                    temp.rejects(4);
+
+                    break;
+                default:
+                    break;
+            }
+
+            temp.clr();
+
+            switch (px) {
+                case 0:
+                    temp.erase(0, 4);
+
+                    break;
+                case 1:
+                    temp.erase(0, 2);
+
+                    break;
+                case 6:
+
+                    temp.erase(4, 6);
+
+
+                    break;
+                case 7:
+                    temp.erase(4, 8);
+
+                    break;
+                default:
+                    break;
+            }
+
+            temp.clr();
+
+            for (int i = 0; i < temp.size(); i++) {
+                if (grid[temp[i]].emblem != '*' && grid[temp[i]].color == color) temp.erase(i);
+            }
+
+            temp.clr();
+
+            for (int i = 0; i < temp.size(); i++) {
+                if (grid[position].check(temp[i], grid)) temp.erase(i);
+            }
+        }
+            break;
+        case 'k':
+
+            temp[0] = position - 7;
+            temp[1] = position - 8;
+            temp[2] = position - 9;
+            temp[3] = position - 1;
+            temp[4] = position + 1;
+            temp[5] = position + 7;
+            temp[6] = position + 8;
+            temp[7] = position + 9;
+            temp.size(8);
+
+
+            switch (px) {
+                case 0:
+
+                    temp[0] = -101;
+                    temp[1] = -101;
+                    temp[2] = -101;
+                    temp.rejects(3);
+
+                    break;
+                case 7:
+
+                    temp[5] = -101;
+                    temp[6] = -101;
+                    temp[7] = -101;
+                    temp.rejects(3);
+
+                    break;
+                default:
+                    break;
+            }
+            switch (py) {
+                case 0:
+                    temp.erase(2);
+                    temp.erase(5);
+                    temp.erase(3);
+
+                    break;
+                case 7:
+                    temp.erase(4);
+                    temp.erase(0);
+                    temp.erase(7);
+                    break;
+                default:
+                    break;
+            }
+
+            temp.clr();
+
+            for (int i = 0; i < temp.size(); i++)
+                if (grid[temp[i]].emblem != '*' && grid[temp[i]].color == color)temp.erase(i);
+
+            temp.clr();
+
+            for (int i = 0; i < temp.size(); i++)
+                if (grid[position].check(temp[i], grid))temp.erase(i);
+
+
+            break;
+        case 'q': {
+            int temp_x = px, temp_y = py;
+            int i = 0;
+
+            while (temp_x > 0 && 7 > temp_y)temp.push_back((--temp_x) * 8 + ++temp_y);
+
+            temp_x = px;
+            temp_y = py;
+
+            for (; i < temp.
+
+                    size();
+
+                   i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.erase(i, temp.size());
+                    else
+                        temp.
+                                erase(i
+                                      + 1, temp.
+
+                                size()
+
+                        );
+                    break;
+
+                }
+
+
+            i = temp.size();
+
+            while (
+                    temp_x < 7 && 7 > temp_y
+                    )
+                temp.push_back((++temp_x) * 8 + ++temp_y);
+
+            temp_x = px;
+            temp_y = py;
+
+            for (; i < temp.
+
+                    size();
+
+                   i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.
+                                erase(i, temp
+                                .
+
+                                        size()
+
+                        );
+                    else
+                        temp.
+                                erase(i
+                                      + 1, temp.
+
+                                size()
+
+                        );
+                    break;
+
+                }
+
+//y
+            i = temp.size();
+            while (temp_x < 7 && 0 < temp_y) temp.push_back((++temp_x) * 8 + --temp_y);
+
+
+            temp_x = px;
+            temp_y = py;
+            for (; i < temp.
+
+                    size();
+
+                   i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.
+                                erase(i, temp
+                                .
+
+                                        size()
+
+                        );
+                    else
+                        temp.
+                                erase(i
+                                      + 1, temp.
+
+                                size()
+
+                        );
+                    break;
+
+                }
+
+
+            i = temp.size();
+            while (temp_x > 0 && 0 < temp_y) temp.push_back((--temp_x) * 8 + --temp_y);
+
+
+            for (; i < temp.
+
+                    size();
+
+                   i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.
+                                erase(i, temp
+                                .
+
+                                        size()
+
+                        );
+                    else
+                        temp.
+                                erase(i
+                                      + 1, temp.
+
+                                size()
+
+                        );
+                    break;
+
+                }
+
+
+//r
+            i = temp.size();
+            for (
+                    int z = 1;
+                    z <=
+                    px;
+                    z++)
+                temp.
+                        push_back(position
+                                  - (z * 8));
+
+
+            for (; i < temp.
+
+                    size();
+
+                   i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.
+                                erase(i, temp
+                                .
+
+                                        size()
+
+                        );
+                    else
+                        temp.
+                                erase(i
+                                      + 1, temp.
+
+                                size()
+
+                        );
+                    break;
+
+                }
+
+
+            i = temp.size();
+
+            for (
+                    int z = 1;
+                    z < 8 -
+                        px;
+                    z++)
+                temp.
+                        push_back(position
+                                  + (z * 8));
+
+
+            for (; i < temp.
+
+                    size();
+
+                   i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.
+                                erase(i, temp
+                                .
+
+                                        size()
+
+                        );
+                    else
+                        temp.
+                                erase(i
+                                      + 1, temp.
+
+                                size()
+
+                        );
+                    break;
+
+                }
+
+//y
+            i = temp.size();
+
+            for (
+                    int z = 1;
+                    z <=
+                    py;
+                    z++)
+                temp.
+                        push_back(position
+                                  - z);
+
+
+            for (; i < temp.
+
+                    size();
+
+                   i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.
+                                erase(i, temp
+                                .
+
+                                        size()
+
+                        );
+                    else
+                        temp.
+                                erase(i
+                                      + 1, temp.
+
+                                size()
+
+                        );
+                    break;
+
+                }
+
+
+            i = temp.size();
+
+            for (
+                    int z = 1;
+                    z < 8 -
+                        py;
+                    z++)
+                temp.
+                        push_back(position
+                                  + z);
+
+
+            for (; i < temp.
+
+                    size();
+
+                   i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.
+                                erase(i, temp
+                                .
+
+                                        size()
+
+                        );
+                    else
+                        temp.
+                                erase(i
+                                      + 1, temp.
+
+                                size()
+
+                        );
+                    break;
+
+                }
+
+
+        }
+            break;
+        case 'b': {
+// x
+            int temp_x = px, temp_y = py;
+            int i = 0;
+
+            while (temp_x > 0 && 7 > temp_y)temp.push_back((--temp_x) * 8 + ++temp_y);
+
+
+            temp_x = px;
+            temp_y = py;
+
+            for (; i < temp.
+
+                    size();
+
+                   i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.erase(i, temp.size());
+                    else
+                        temp.erase(i+ 1, temp.size());
+                    break;
+
+                }
+
+            i = temp.size();
+
+            while (temp_x < 7 && 7 > temp_y)
+                temp.push_back((++temp_x) * 8 + ++temp_y);
+
+            temp_x = px;
+            temp_y = py;
+
+            for (; i < temp.size();i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.erase(i, temp.size()
+
+                        );
+                    else
+                        temp.
+                                erase(i
+                                      + 1, temp.
+
+                                size()
+
+                        );
+                    break;
+
+                }
+
+//y
+            i = temp.size();
+            while (temp_x < 7 && 0 < temp_y) temp.push_back((++temp_x) * 8 + --temp_y);
+
+
+            temp_x = px;
+            temp_y = py;
+            for (; i < temp.
+
+                    size();
+
+                   i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.
+                                erase(i, temp
+                                .
+
+                                        size()
+
+                        );
+                    else
+                        temp.
+                                erase(i
+                                      + 1, temp.
+
+                                size()
+
+                        );
+                    break;
+
+                }
+
+
+            i = temp.size();
+            while (temp_x > 0 && 0 < temp_y) temp.push_back((--temp_x) * 8 + --temp_y);
+
+
+            for (; i < temp.
+
+                    size();
+
+                   i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.
+                                erase(i, temp.size()
+
+                        );
+                    else
+                        temp.erase(i + 1, temp.size()
+
+                        );
+                    break;
+
+                }
+
+        }
+            break;
+        case 'r': {
+
+
+            int i = 0;
+//x
+            for (
+                    int z = 1;
+                    z <=
+                    px;
+                    z++)
+                temp.
+                        push_back(position
+                                  - (z * 8));
+
+
+            for (; i < temp.
+
+                    size();
+
+                   i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.
+                                erase(i, temp
+                                .
+
+                                        size()
+
+                        );
+                    else
+                        temp.
+                                erase(i
+                                      + 1, temp.
+
+                                size()
+
+                        );
+                    break;
+
+                }
+
+
+            i = temp.size();
+
+            for (
+                    int z = 1;
+                    z < 8 -
+                        px;
+                    z++)
+                temp.
+                        push_back(position
+                                  + (z * 8));
+
+
+            for (; i < temp.
+
+                    size();
+
+                   i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.
+                                erase(i, temp
+                                .
+
+                                        size()
+
+                        );
+                    else
+                        temp.
+                                erase(i
+                                      + 1, temp.
+
+                                size()
+
+                        );
+                    break;
+
+                }
+
+//y
+            i = temp.size();
+
+            for (
+                    int z = 1;
+                    z <=
+                    py;
+                    z++)
+                temp.
+                        push_back(position
+                                  - z);
+
+
+            for (; i < temp.
+
+                    size();
+
+                   i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.
+                                erase(i, temp
+                                .
+
+                                        size()
+
+                        );
+                    else
+                        temp.
+                                erase(i
+                                      + 1, temp.
+
+                                size()
+
+                        );
+                    break;
+
+                }
+
+
+            i = temp.size();
+
+            for (
+                    int z = 1;
+                    z < 8 -
+                        py;
+                    z++)
+                temp.
+                        push_back(position
+                                  + z);
+
+
+            for (; i < temp.
+
+                    size();
+
+                   i++)
+                if (grid[temp[i]].emblem != '*') {
+                    if (grid[temp[i]].color == color)
+                        temp.
+                                erase(i, temp
+                                .
+
+                                        size()
+
+                        );
+                    else
+                        temp.
+                                erase(i
+                                      + 1, temp.
+
+                                size()
+
+                        );
+                    break;
+
+                }
+
+
+        }
+            break;
+        default:
+            printf("well %d not a pon u dumbas \n", position);
+            break;
+    }
+    temp.
+
+            clr();
+
+    return
+            temp;
+#else
+    //ok the plan is that its 3 dimentional array and 1st lavel has 64 elemants seckond has 4 and the last is whatever
+
+    array all_of_possible_moves;
+    //
+    int px = position / 8, py = position % 8;
+
+
+    char emblem = grid[position].emblem;
+
+    bool color = grid[position].color;
+
+    bool is_moved = grid[position].is_moved;
+
+    switch (emblem) {
+        case 'p':
+            if (color) {   // czarne czyli \/
+
+                if (this->grid[position + 8].emblem == '*') {
+                    all_of_possible_moves.push_back(position + 8);
+                    if (!is_moved && this->grid[position + 16].emblem == '*')
+                        all_of_possible_moves.push_back(position + 16);
+
+                }
+
+                if (py != 7 && this->grid[position + 9].emblem != '*' && this->grid[position + 9].color == !color)
+                    all_of_possible_moves.push_back(position + 9);
+                if (py != 0 && this->grid[position + 7].emblem != '*' && this->grid[position + 7].color == !color)
+                    all_of_possible_moves.push_back(position + 7);
+
+
+                break;
+            } else {
+
+                if (this->grid[position - 8].emblem == '*') {
+                    all_of_possible_moves.push_back(position - 8);
+                    if (!is_moved && this->grid[position - 16].emblem == '*')
+                        all_of_possible_moves.push_back(position - 16);
+                }
+
+                if (py != 0 && this->grid[position - 9].emblem != '*' && this->grid[position - 9].color == !color)
+                    all_of_possible_moves.push_back(position - 9);
+                if (py != 7 && this->grid[position - 7].emblem != '*' && this->grid[position - 7].color == !color)
+                    all_of_possible_moves.push_back(position - 7);
+
+            }
+
+
+            break;
+        case 'n': {
+
+            all_of_possible_moves[0] = position - 15;
+            all_of_possible_moves[1] = position - 17;
+            all_of_possible_moves[2] = position - 6;
+            all_of_possible_moves[3] = position - 10;
+            all_of_possible_moves[4] = position + 15;
+            all_of_possible_moves[5] = position + 17;
+            all_of_possible_moves[6] = position + 6;
+            all_of_possible_moves[7] = position + 10;
+            all_of_possible_moves.size(8);
+
+
+            switch (py) {
+                case 0:
+                    all_of_possible_moves[1] = -101;
+                    all_of_possible_moves[3] = -101;
+                    all_of_possible_moves[4] = -101;
+                    all_of_possible_moves[6] = -101;
+                    all_of_possible_moves.rejects(4);
+                    break;
+                case 1:
+
+                    all_of_possible_moves[3] = -101;
+                    all_of_possible_moves[6] = -101;
+                    all_of_possible_moves.rejects(2);
+
+                    break;
+                case 6:
+
+                    all_of_possible_moves[2] = -101;
+                    all_of_possible_moves[7] = -101;
+
+                    all_of_possible_moves.rejects(2);
+
+                    break;
+                case 7:
+
+                    all_of_possible_moves[0] = -101;
+                    all_of_possible_moves[2] = -101;
+                    all_of_possible_moves[5] = -101;
+                    all_of_possible_moves[7] = -101;
+                    all_of_possible_moves.rejects(4);
+
+                    break;
+                default:
+                    break;
+            }
+
+            all_of_possible_moves.clr();
+
+            switch (px) {
+                case 0:
+                    all_of_possible_moves.erase(0, 4);
+
+                    break;
+                case 1:
+                    all_of_possible_moves.erase(0, 2);
+
+                    break;
+                case 6:
+
+                    all_of_possible_moves.erase(4, 6);
+
+
+                    break;
+                case 7:
+                    all_of_possible_moves.erase(4, 8);
+
+                    break;
+                default:
+                    break;
+            }
+
+            all_of_possible_moves.clr();
+
+            for (int i = 0; i < all_of_possible_moves.size(); i++) {
+                if (this->grid[all_of_possible_moves[i]].emblem != '*' &&
+                    this->grid[all_of_possible_moves[i]].color == color)
+                    all_of_possible_moves.erase(i);
+            }
+
+            all_of_possible_moves.clr();
+
+            for (int i = 0; i < all_of_possible_moves.size(); i++) {
+                if (this->check(all_of_possible_moves[i])) all_of_possible_moves.erase(i);
+            }
+
+        }
+            break;
+        case 'r': {
+
+            dynamic_arr<array> before_processing(4);
+
+            before_processing = this->full_board_of_moves_4_rook[position];
+
+            for(int i=0;i<before_processing.size();i++){
+                for(int j=0;j<before_processing[i].size();j++){
+                    printf("%d ",before_processing[i][j]);
+
+                }
+                printf("\t%d<->size%d\n",i,before_processing[i].size());
+            }
+            printf("%d<<<<<\n",before_processing.size());
+
+            for (int i = 0; i < before_processing.size(); i++) {
+                for (int j = 0; j < before_processing[i].size(); j++) {
+                    printf(">%d<>%d<>%c<\n",i,j,grid[before_processing[i][j]].emblem);
+
+                    if (grid[before_processing[i][j]].emblem != '*') {
+                        if (grid[before_processing[i][j]].color != color)
+                            all_of_possible_moves.push_back(before_processing[i][j]);
+                        break;
+                    }
+                    all_of_possible_moves.push_back(before_processing[i][j]);
+
+                }
+            }
+            printf("akay then : ");
+            for(int i=0;i<all_of_possible_moves.size();i++)
+                printf("%d ",all_of_possible_moves[i]);
+
+            printf("\n");
+
+        }
+
+            break;
+        case 'b': {
+            dynamic_arr<array> before_processing;
+            before_processing = this->full_board_of_moves_4_bishop[position];
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < before_processing[i].size(); j++) {
+                    if (this->grid[before_processing[i][j]].emblem != '*') {
+                        if (this->grid[before_processing[i][j]].color == color)break;
+                        all_of_possible_moves.push_back(before_processing[i][j]);
+                        break;
+                    }
+                    all_of_possible_moves.push_back(before_processing[i][j]);
+
+                }
+            }
+
+        }
+            break;
+        case 'k':
+            all_of_possible_moves[0] = position - 7;
+            all_of_possible_moves[1] = position - 8;
+            all_of_possible_moves[2] = position - 9;
+            all_of_possible_moves[3] = position - 1;
+            all_of_possible_moves[4] = position + 1;
+            all_of_possible_moves[5] = position + 7;
+            all_of_possible_moves[6] = position + 8;
+            all_of_possible_moves[7] = position + 9;
+            all_of_possible_moves.size(8);
+
+
+            switch (px) {
+                case 0:
+
+                    all_of_possible_moves[0] = -101;
+                    all_of_possible_moves[1] = -101;
+                    all_of_possible_moves[2] = -101;
+                    all_of_possible_moves.rejects(3);
+
+                    break;
+                case 7:
+
+                    all_of_possible_moves[5] = -101;
+                    all_of_possible_moves[6] = -101;
+                    all_of_possible_moves[7] = -101;
+                    all_of_possible_moves.rejects(3);
+
+                    break;
+                default:
+                    break;
+            }
+            switch (py) {
+                case 0:
+                    all_of_possible_moves.erase(2);
+                    all_of_possible_moves.erase(5);
+                    all_of_possible_moves.erase(3);
+
+                    break;
+                case 7:
+                    all_of_possible_moves.erase(4);
+                    all_of_possible_moves.erase(0);
+                    all_of_possible_moves.erase(7);
+                    break;
+                default:
+                    break;
+            }
+
+            all_of_possible_moves.clr();
+
+            for (int i = 0; i < all_of_possible_moves.size(); i++)
+                if (this->grid[all_of_possible_moves[i]].emblem != '*' &&
+                    this->grid[all_of_possible_moves[i]].color == color)
+                    all_of_possible_moves.erase(i);
+
+            all_of_possible_moves.clr();
+
+            for (int i = 0; i < all_of_possible_moves.size(); i++)
+                if (this->check(all_of_possible_moves[i]))all_of_possible_moves.erase(i);
+
+
+            break;
+
+        case 'q': {
+            dynamic_arr<array> before_processing;
+            before_processing = this->full_board_of_moves_4_rook[position];
+
+            for (int i = 0; i < before_processing.size(); i++) {
+                for (int j = 0; j < before_processing[i].size(); j++) {
+                    if (this->grid[before_processing[i][j]].emblem != '*') {
+                        if (this->grid[before_processing[i][j]].color != color)
+                            all_of_possible_moves.push_back(before_processing[i][j]);
+                        break;
+                    }
+                    all_of_possible_moves.push_back(before_processing[i][j]);
+
+                }
+            }
+
+            before_processing = this->full_board_of_moves_4_bishop[position];
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < before_processing[i].size(); j++) {
+                    if (this->grid[before_processing[i][j]].emblem != '*') {
+                        if (this->grid[before_processing[i][j]].color != color)
+                            all_of_possible_moves.push_back(before_processing[i][j]);
+                        break;
+                    }
+                    all_of_possible_moves.push_back(before_processing[i][j]);
+
+                }
+            }
+        }
+        break;
+    }
+    return all_of_possible_moves;
+#endif
+
+}
+
+bool board::possible(int position, int go_to) {
+
+    int px = position / 8, py = position % 8, gx = go_to / 8, gy = go_to % 8;
+    char emblem = grid[position].emblem;
+    bool color = grid[position].color;
+
+
+    switch (emblem) {
+        case 'p': {
+            if (color) {
+                if (go_to == position + 8 && grid[go_to].emblem == '*') return true;
+                if (go_to == position + 16 && grid[go_to].emblem == '*') return true;
+                if (go_to == position + 7 && grid[go_to].emblem != '*' && grid[go_to].color != color) return true;
+                if (go_to == position + 9 && grid[go_to].emblem != '*' && grid[go_to].color != color) return true;
+            } else {
+                if (go_to == position - 8 && grid[go_to].emblem == '*') return true;
+                if (go_to == position - 16 && grid[go_to].emblem == '*') return true;
+                if (go_to == position - 7 && grid[go_to].emblem != '*' && grid[go_to].color != color) return true;
+                if (go_to == position - 9 && grid[go_to].emblem != '*' && grid[go_to].color != color) return true;
+
+            }
+        }
+            break;
+        case 'n': {
+            int temp[8] = {position - 17, position - 15, position - 10, position - 6, position + 6, position + 10,
+                           position + 15, position + 17};
+            return binary(go_to, temp);
+        }
+            break;
+        case 'k': {
+            int temp[8] = {position - 9, position - 8, position - 7, position - 1, position + 1, position + 7,
+                           position + 8,
+                           position + 9};
+            return binary(go_to, temp);
+        }
+            break;
+        case 'q': {
+
+/// ok nowy plan
+            int b = px + py;
+            ///         / <-this one
+            if (b == gy + gx) {
+                array temp;
+                int temp_x = px, temp_y = py;
+
+                if (gy < py) while (temp_x < 7 && 0 < temp_y) temp.push_back((++temp_x) * 8 + --temp_y);
+                else while (temp_x > 0 && 7 > temp_y)temp.push_back((--temp_x) * 8 + ++temp_y);
+
+
+                for (int i = 0; i < temp.size(); i++) {
+                    if (grid[temp[i]].emblem != '*')
+                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                        else return false;
+                    if (temp[i] == go_to) return true;
+                }
+            }
+
+            /// \ <-this one
+            b = py - px;
+            if (b + gx == gy) {// lg to pd
+                array temp;
+
+                int temp_x = px, temp_y = py;
+                /// tu idziemy do góry
+                if (gy < py) while (temp_x > 0 && 0 < temp_y) temp.push_back((--temp_x) * 8 + --temp_y);
+                else while (temp_x < 7 && 7 > temp_y) temp.push_back((++temp_x) * 8 + ++temp_y);
+
+
+                for (int i = 0; i < temp.size(); i++) {
+                    if (grid[temp[i]].emblem != '*')
+                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                        else return false;
+                    if (temp[i] == go_to) return true;
+                }
+
+            }
+
+
+            if (px == gx) {
+                array temp;
+                if (py > gy) for (int z = py - 1; z >= 0; z--) temp.push_back(px * 8 + z);
+                else for (int z = py + 1; z < 8; z++) temp.push_back(px * 8 + z);
+
+
+                for (int i = 0; i < temp.size(); i++) {
+                    if (grid[temp[i]].emblem != '*')
+                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                        else return false;
+                    if (temp[i] == go_to) return true;
+                }
+            }
+            if (py == gy) {
+
+                array temp;
+
+                if (px > gx) for (int z = px - 1; z >= 0; z--) temp.push_back(z * 8 + py);
+                else for (int z = px + 1; z < 8; z++) temp.push_back(z * 8 + py);
+
+                for (int i = 0; i < temp.size(); i++) {
+                    if (grid[temp[i]].emblem != '*')
+                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                        else return false;
+                    if (temp[i] == go_to) return true;
+                }
+            }
+        }
+
+            break;
+        case 'b': {
+            int b = px + py;
+            ///         / <-this one
+            if (b == gy + gx) {
+                array temp;
+                int temp_x = px, temp_y = py;
+
+                if (gy < py) while (temp_x < 7 && 0 < temp_y) temp.push_back((++temp_x) * 8 + --temp_y);
+                else while (temp_x > 0 && 7 > temp_y)temp.push_back((--temp_x) * 8 + ++temp_y);
+
+
+                for (int i = 0; i < temp.size(); i++) {
+                    if (grid[temp[i]].emblem != '*')
+                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                        else return false;
+                    if (temp[i] == go_to) return true;
+                }
+            }
+
+            /// \ <-this one
+            b = py - px;
+            if (b + gx == gy) {// lg to pd
+                array temp;
+
+                int temp_x = px, temp_y = py;
+                /// tu idziemy do góry
+                if (gy < py) while (temp_x > 0 && 0 < temp_y) temp.push_back((--temp_x) * 8 + --temp_y);
+                else while (temp_x < 7 && 7 > temp_y) temp.push_back((++temp_x) * 8 + ++temp_y);
+
+
+                for (int i = 0; i < temp.size(); i++) {
+                    if (grid[temp[i]].emblem != '*')
+                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                        else return false;
+                    if (temp[i] == go_to) return true;
+                }
+
+            }
+        }
+            break;
+        case 'r': {
+            if (px == gx) {
+
+                array temp;
+
+                if (py > gy) for (int z = py - 1; z >= 0; z--) temp.push_back(px * 8 + z);
+                else for (int z = py + 1; z < 8; z++) temp.push_back(px * 8 + z);
+
+
+                for (int i = 0; i < temp.size(); i++) {
+                    if (grid[temp[i]].emblem != '*')
+                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                        else return false;
+                    if (temp[i] == go_to) return true;
+                }
+            }
+            if (py == gy) {
+
+                array temp;
+
+                if (px > gx) for (int z = px - 1; z >= 0; z--) temp.push_back(z * 8 + py);
+                else for (int z = px + 1; z < 8; z++) temp.push_back(z * 8 + py);
+
+                for (int i = 0; i < temp.size(); i++) {
+                    if (grid[temp[i]].emblem != '*')
+                        if (grid[temp[i]].color != color) return temp[i] == go_to;
+                        else return false;
+                    if (temp[i] == go_to) return true;
+                }
+
+            }
+
+        }
+            break;
+
+
+    }
+    return false;
+
+
+}
+
+array board::pin(int position) {
+
+    char emblem = grid[position].emblem;
+    bool color = grid[position].color;
+
+    array possible_moves;
+    if (emblem == 'k') return possible_moves;
+
+    int px = position / 8, py = position % 8;
+
+    int king_x = 65, king_y = 65;
+
+    for (int i = 0; i < 64; i++) {
+        if (grid[i].emblem == 'k' && grid[i].color == color) {
+            king_x = i / 8;
+            king_y = i % 8;
+            break;
+
+        }
+
+    }
+    if (king_x == 65) return possible_moves;
+
+    ///r
+    int b = king_y - king_x;
+
+    if (px == king_x) {
+        if (py > king_y) {
+
+            int i = king_y;
+            for (; i < 7; i++) {
+
+                if (grid[px * 8 + i].emblem != '*') {
+                    if (i == py) {
+                        i++;
+                        while (i < 8) {
+                            switch (grid[px * 8 + i].emblem) {
+                                case '*':
+                                    possible_moves.push_back(px * 8 + i);
+                                    i++;
+                                    break;
+
+                                case 'r':
+                                    if (grid[px * 8 + i].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(px * 8 + i);
+
+                                    for (i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+
+                                    possible_moves.clr();
+                                    if (possible_moves.size() == 0) possible_moves.push_back(-1);
+
+                                    return possible_moves;
+                                case 'q':
+                                    if (grid[px * 8 + i].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(px * 8 + i);
+
+                                    for (i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
+                                    return possible_moves;
+
+
+                            }
+                        }
+
+                    } else possible_moves.clear();
+                    return possible_moves;
+                } else possible_moves.push_back(px * 8 + i);
+
+            }
+        } else {
+
+            int i = king_y;
+            i--;
+            for (; i > 0; i--) {
+                if (grid[king_x * 8 + i].emblem != '*') {
+                    if (i == py) {
+
+                        i--;
+                        while (i >= 0) {
+                            switch (grid[px * 8 + i].emblem) {
+                                case '*':
+                                    possible_moves.push_back(px * 8 + i);
+                                    i--;
+                                    break;
+                                case 'r':
+                                    if (grid[px * 8 + i].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(px * 8 + i);
+
+                                    for (i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+
+                                    possible_moves.clr();
+                                    if (possible_moves.size() == 0) possible_moves.push_back(-1);
+
+                                    return possible_moves;
+                                case 'q':
+                                    if (grid[px * 8 + i].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(px * 8 + i);
+
+                                    for (i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
+                                    return possible_moves;
+
+                            }
+                        }
+                    } else possible_moves.clear();
+                    return possible_moves;
+                } else possible_moves.push_back(px * 8 + i);
+            }
+        }
+    } else if (py == king_y) {
+        if (px > king_x) {
+            int i = king_x;
+            while (i < 7) {
+                i++;
+                if (grid[i * 8 + py].emblem != '*') {
+                    if (i == px) {
+                        i++;
+                        while (i < 8) {
+                            switch (grid[i * 8 + py].emblem) {
+                                case '*':
+                                    possible_moves.push_back(i * 8 + py);
+                                    i++;
+                                case 'r':
+                                    if (grid[px * 8 + i].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(px * 8 + i);
+
+                                    for (i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+
+                                    possible_moves.clr();
+                                    if (possible_moves.size() == 0) possible_moves.push_back(-1);
+
+                                    return possible_moves;
+                                case 'q':
+                                    if (grid[px * 8 + i].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(px * 8 + i);
+
+                                    for (i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
+                                    return possible_moves;
+                            }
+                        }
+                    } else possible_moves.clear();
+                    return possible_moves;
+                } else possible_moves.push_back(i * 8 + py);
+            }
+        } else {
+            int i = king_x;
+            while (i >= 0) {
+                i--;
+                if (grid[i * 8 + py].emblem != '*') {
+                    if (i == px) {
+                        i--;
+                        while (i >= 0) {
+                            switch (grid[i * 8 + py].emblem) {
+                                case '*':
+                                    possible_moves.push_back(i * 8 + py);
+                                    i--;
+                                    break;
+                                case 'r':
+                                    if (grid[px * 8 + i].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(px * 8 + i);
+
+                                    for (i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+
+                                    possible_moves.clr();
+                                    if (possible_moves.size() == 0) possible_moves.push_back(-1);
+
+                                    return possible_moves;
+                                case 'q':
+                                    if (grid[px * 8 + i].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(px * 8 + i);
+
+                                    for (i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
+                                    return possible_moves;
+                            }
+                        }
+                    } else possible_moves.clear();
+                    return possible_moves;
+                } else possible_moves.push_back(i * 8 + py);
+            }
+        }
+    } else if (py == (px + b)) {
+        if (py > king_y) {
+            int nx = king_x, ny = king_y;
+            while (nx > 0 && ny < 7) {
+                nx--;
+                ny++;
+
+                if (grid[nx * 8 + ny].emblem != '*') {
+                    if ((nx * 8 + ny) == (px * 8 + py)) {
+                        nx = px - 1;
+                        ny = py + 1;
+
+                        while (nx > 0 && ny < 7) {
+                            switch (grid[nx * 8 + ny].emblem) {
+                                case '*':
+                                    possible_moves.push_back(nx * 8 + ny);
+                                    nx--;
+                                    ny++;
+                                    break;
+                                case 'b':
+                                    if (grid[nx * 8 + ny].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(nx * 8 + ny);
+
+                                    for (int i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+
+                                    possible_moves.clr();
+                                    if (possible_moves.size() == 0) possible_moves.push_back(-1);
+
+                                    return possible_moves;
+                                case 'q':
+                                    if (grid[nx * 8 + ny].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(nx * 8 + ny);
+
+                                    for (int i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
+                                    return possible_moves;
+                            }
+                        }
+                    } else possible_moves.clear();
+                    return possible_moves;
+                } else possible_moves.push_back(nx * 8 + ny);
+            }
+        } else {
+            int nx = king_x, ny = king_y;
+            while (nx < 7 && ny > 0) {
+                nx++;
+                ny--;
+
+                if (grid[nx * 8 + ny].emblem != '*') {
+                    if ((nx * 8 + ny) == (px * 8 + py)) {
+                        nx = px + 1;
+                        ny = py - 1;
+                        while (nx < 8 && ny >= 0) {
+                            switch (grid[nx * 8 + ny].emblem) {
+                                case '*':
+                                    possible_moves.push_back(nx * 8 + ny);
+                                    nx--;
+                                    ny++;
+                                    break;
+                                case 'b':
+                                    if (grid[nx * 8 + ny].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(nx * 8 + ny);
+
+                                    for (int i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+
+                                    possible_moves.clr();
+                                    if (possible_moves.size() == 0) possible_moves.push_back(-1);
+
+                                    return possible_moves;
+                                case 'q':
+                                    if (grid[nx * 8 + ny].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(nx * 8 + ny);
+
+                                    for (int i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
+                                    return possible_moves;
+                            }
+                        }
+                    } else possible_moves.clear();
+                    return possible_moves;
+                } else possible_moves.push_back(nx * 8 + ny);
+            }
+        }
+    } else if (py == (px - b)) {
+        if (py < king_y) {
+            int nx = king_x, ny = king_y;
+
+            while (nx > 0 && ny > 0) {
+                nx--;
+                ny--;
+
+                if (grid[nx * 8 + ny].emblem != '*') {
+                    if ((nx * 8 + ny) == (px * 8 + py)) {
+                        nx = px - 1;
+                        ny = py - 1;
+
+                        while (nx > 0 && ny < 7) {
+                            switch (grid[nx * 8 + ny].emblem) {
+                                case '*':
+                                    possible_moves.push_back(nx * 8 + ny);
+                                    nx--;
+                                    ny--;
+                                    break;
+                                case 'b':
+                                    if (grid[nx * 8 + ny].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(nx * 8 + ny);
+
+                                    for (int i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+
+                                    possible_moves.clr();
+                                    if (possible_moves.size() == 0) possible_moves.push_back(-1);
+
+                                    return possible_moves;
+                                case 'q':
+                                    if (grid[nx * 8 + ny].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(nx * 8 + ny);
+
+                                    for (int i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
+                                    return possible_moves;
+                            }
+                        }
+                    } else possible_moves.clear();
+                    return possible_moves;
+                } else possible_moves.push_back(nx * 8 + ny);
+            }
+        } else {
+            int nx = king_x, ny = king_y;
+
+            while (nx < 7 && ny < 7) {
+                nx++;
+                ny++;
+
+                if (grid[nx * 8 + ny].emblem != '*') {
+                    if ((nx * 8 + ny) == (px * 8 + py)) {
+                        nx = px + 1;
+                        ny = py + 1;
+
+                        while (nx < 7 && ny > 0) {
+                            switch (grid[nx * 8 + ny].emblem) {
+                                case '*':
+                                    possible_moves.push_back(nx * 8 + ny);
+                                    nx++;
+                                    ny++;
+                                    break;
+                                case 'b':
+                                    if (grid[nx * 8 + ny].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(nx * 8 + ny);
+
+                                    for (int i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+
+                                    possible_moves.clr();
+                                    if (possible_moves.size() == 0) possible_moves.push_back(-1);
+
+                                    return possible_moves;
+                                case 'q':
+                                    if (grid[nx * 8 + ny].color == color) {
+                                        possible_moves.clear();
+                                        return possible_moves;
+                                    } else possible_moves.push_back(nx * 8 + ny);
+
+                                    for (int i = possible_moves.size() - 1; i >= 0; i--)
+                                        if (!this->possible(position, possible_moves[i]))
+                                            possible_moves.erase(i);
+                                    return possible_moves;
+                                default:
+                                    possible_moves.clear();
+                                    return possible_moves;
+                            }
+                        }
+                    } else possible_moves.clear();
+                    return possible_moves;
+                } else possible_moves.push_back(nx * 8 + ny);
+            }
+        }
+    }
+    return possible_moves;
+}
+
+bool board::check(int position) {
+#if 0
+    int px = position / 8, py = position % 8;
+   if (px < 0 || px > 7 || py < 0 || py > 7) return false;  // here
+   int r_tab[14];
+
+   ///4 bishup
+   int b = py - px;
+
+
+   int b_tab[13];
+   int nx=px;
+   int ny=py;
+   while(1<2){
+       if (nx < 0 || nx > 7 || ny < 0 || ny > 7) break;
+       nx--;
+       ny--;
+   }
+   int p[2]={nx, ny};
+   int i=0;
+   for (; nx + b == ny; i++) {
+       b_tab[i] =  nx * 8+b + ny;
+       nx++;
+       ny++;
+       if (nx > 7 || ny > 7) break;
+   }
+   nx=p[0];
+   ny=p[1];
+
+   for (; ny == nx-b ; i++) {
+       b_tab[i] =  nx * 8+b + ny;
+       nx++;
+       ny++;
+       if (nx < 0 ||  ny < 0 ) break;
+   }// i guess;
+   for (int j = 0; j < i; ++j) {
+       if ((grid[b_tab[j]].emblem == 'b'||grid[b_tab[j]].emblem == 'q') && grid[b_tab[j]].color != color)
+           if (grid[b_tab[j]].possible(b_tab[j], grid, position, true)) return true;
+   }
+
+
+///4 rook
+int j=0;
+   for (int i = 0; i < 8; i++) {
+
+       if ((px*8 + i) != position){ r_tab[j] = px*8 + i;++j;}
+
+   }
+
+   for (int i = 0; i < 8; i++) {
+       if ((i * 8 + py) != position){ r_tab[j] = i * 8 + py;++j;}
+   }
+
+   for (int i : r_tab) {
+       if ((grid[i].emblem == 'r'|| grid[i].emblem == 'q') && grid[i].color != color)
+           if (grid[i].possible(i, grid, position, true)) return true;
+   }
+
+   /// 4 horsey
+
+
+   int temp[8] = {position - 17, position - 15, position - 10, position - 6, position + 6, position + 10,
+                  position + 15, position + 17};
+
+   for (int i = 0; i < 8; i++) {
+       if (grid[temp[i]].emblem == 'n' && grid[temp[i]].color != color)
+           if(grid[temp[i]].possible(temp[i],grid,position,true)) return true;
+
+
+   }
+   delete[] &temp;
+
+/// paion
+
+   if (color) {//+
+
+       if (grid[position - 9].emblem == 'p' && grid[position - 9].color != color)
+           if(grid[position - 9].possible(position - 9,grid,position,true)) return true;
+       if (grid[position - 7].emblem == 'p' && grid[position - 7].color != color)
+           if(grid[position - 7].possible(position - 7,grid,position,true)) return true;
+   } else {//-
+
+       if (grid[position + 9].emblem == 'p' && grid[position + 9].color != color)
+           if(grid[position + 9].possible(position + 9,grid,position,true)) return true;
+       if (grid[position + 7].emblem == 'p' && grid[position + 7].color != color)
+           if(grid[position +7].possible(position +7 ,grid,position,true)) return true;
+   }
+   return false;
+#else
+    for (int i = 0; i < 64; i++)
+        if (grid[i].emblem != '*' && grid[i].color != grid[position].color)
+            if (this->possible(i, position)) return true;
+    return false;
+#endif
+}
+

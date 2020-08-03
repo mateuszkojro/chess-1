@@ -9,19 +9,15 @@
 #include <string>
 #include <vector>
 #include "mov.h"
-
+//#include "board.h"
 
 
 class piece {//0 białe i czarne
 public:
-
-
     char emblem;
     bool is_moved;
     bool color;
 
-
-public:
     piece() {
 
         emblem = '*';
@@ -74,16 +70,12 @@ public:
     };
 
     //virtual int conditions() = 0;
-    arr possible(int position, piece *grid);
-
-    bool possible(int position, piece *grid, int go_to, bool pin = true);
-
-    arr pin(int position, piece *grid);
-
-    piece(const piece &a);
 
 
-    bool check(int position ,piece *grid );
+
+
+
+
 
     piece &operator=(piece *a);
 
