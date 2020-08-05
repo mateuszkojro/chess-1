@@ -9,6 +9,9 @@
 
 #include <conio.h>
 #include <windows.h>
+#include <chrono>
+#include <mutex>
+#include <thread>
 
 void w8(unsigned milliseconds) {
     Sleep(milliseconds);
@@ -468,20 +471,32 @@ void board::admin() {
                 grid[ctn(temp[2], temp[1])] = new piece();
                 break;
             case '*': {
-                bool color = static_cast<bool>(static_cast<int>(temp[1]) - 48);
-                int deepth = static_cast<int>(temp[2]) - 48;
-                mov tp = bip(color, deepth);
-                printf("%c%d -> ", (char) tp.pos % 8 + 97, ((tp.pos / 8) - 8) * (-1));
-                printf("%c%d  ", (char) tp.g_t % 8 + 97, ((tp.g_t / 8) - 8) * (-1));
-                printf("%f  \a\n", tp.eva);
-                do_it = false;
+                if (temp.size() == 3) {
+                    bool color = static_cast<bool>(static_cast<int>(temp[1]) - 48);
+                    int deepth = static_cast<int>(temp[2]) - 48;
+                    mov tp = bip(color, deepth);
+                    printf("%c%d -> ", (char) tp.pos % 8 + 97, ((tp.pos / 8) - 8) * (-1));
+                    printf("%c%d  ", (char) tp.g_t % 8 + 97, ((tp.g_t / 8) - 8) * (-1));
+                    printf("%f  \a\n", tp.eva);
+                    do_it = false;
+                } else {
+
+                    bool color = static_cast<bool>(static_cast<int>(temp[1]) - 48);
+                    int deepth = static_cast<int>(temp[2]) - 48;
+                    int threads = static_cast<int>(temp[3]) - 48;
+                    mov tp = bip(color, deepth, threads);
+                    printf("%c%d -> ", (char) tp.pos % 8 + 97, ((tp.pos / 8) - 8) * (-1));
+                    printf("%c%d  ", (char) tp.g_t % 8 + 97, ((tp.g_t / 8) - 8) * (-1));
+                    printf("%f  \a\n", tp.eva);
+                    do_it = false;
+
+
+                }
             }
                 break;
             case 'p': {
                 if (temp.size() == 5)
-                    printf("%d ", (this->possible(
-                            ctn(temp[2], temp[1]),
-                            ctn(temp[4], temp[3]))));
+                    printf("%d ", this->possible(ctn(temp[2], temp[1]), ctn(temp[4], temp[3])));
                 else {
                     array legal = this->array_of_possible(ctn(temp[2], temp[1]));
                     if (temp.size() == 4 && temp[3] == 's') {
@@ -697,8 +712,212 @@ double board::evaluate() { // k q r b n p
 
 void board::pvc() {}
 
-mov board::bip(bool color, int deepth) {
+std::mutex array_lock;
+dynamic_arr<mov> tab_of_possible_moves_4_threads;
 
+double board::do_the_move(mov suspect, bool color, int deepth) {
+
+    piece temp[2];
+    switch (suspect.g_t) {
+        case 100:
+
+            temp[0] = grid[suspect.g_t]; //i+1
+            temp[1] = grid[suspect.pos];
+
+            grid[suspect.g_t] = new piece('n', color, true);
+            grid[suspect.pos].emblem = '*';
+
+            suspect.eva = this->minmax(deepth, color, !color);
+
+            grid[suspect.g_t] = temp[0];
+            grid[suspect.pos] = temp[1];
+            break;
+        case 101:
+            temp[0] = grid[suspect.g_t];
+            temp[1] = grid[suspect.pos];
+
+            grid[suspect.g_t] = new piece('q', color, true);
+            grid[suspect.pos].emblem = '*';
+
+            suspect.eva = this->minmax(deepth, color, !color);
+
+            grid[suspect.g_t] = temp[0];
+            grid[suspect.pos] = temp[1];
+            break;
+        case 66:
+            if (color) {
+                grid[4].emblem = '*';
+                grid[5] = new piece('r', color, true);
+                grid[6] = new piece('k', color, true);
+                grid[7].emblem = '*';
+                suspect.eva = this->minmax(deepth, color, !color);
+                grid[4] = new piece('k', color, false);
+                grid[5].emblem = '*';
+                grid[6].emblem = '*';
+                grid[7] = new piece('r', color, false);
+            } else {
+                grid[60].emblem = '*';
+                grid[61] = new piece('r', color, true);
+                grid[62] = new piece('k', color, true);
+                grid[63].emblem = '*';
+                suspect.eva = this->minmax(deepth, color, !color);
+                grid[60] = new piece('k', color, false);
+                grid[61].emblem = '*';
+                grid[62].emblem = '*';
+                grid[63] = new piece('r', color, false);
+
+            }
+            break;
+        case 666:
+            if (color) {
+                grid[0].emblem = '*';
+                grid[1].emblem = '*';
+                grid[2] = new piece('k', color, true);
+                grid[3] = new piece('r', color, true);
+                grid[4].emblem = '*';
+                suspect.eva = this->minmax(deepth, color, !color);
+                grid[0] = new piece('r', color, false);
+                grid[1].emblem = '*';
+                grid[2].emblem = '*';
+                grid[3].emblem = '*';
+                grid[4] = new piece('k', color, false);
+            } else {
+                grid[46].emblem = '*';
+                grid[47].emblem = '*';
+                grid[48] = new piece('k', color, true);
+                grid[49] = new piece('r', color, true);
+                grid[50].emblem = '*';
+                suspect.eva = this->minmax(deepth, color, !color);
+                grid[46] = new piece('r', color, false);
+                grid[47].emblem = '*';
+                grid[48].emblem = '*';
+                grid[49].emblem = '*';
+                grid[50] = new piece('k', color, false);
+            }
+            break;
+        default:
+
+            temp[0] = grid[suspect.pos];
+            temp[1] = grid[suspect.g_t];
+
+            grid[suspect.g_t] = grid[suspect.pos];
+
+            grid[suspect.g_t].is_moved = true;
+
+            grid[suspect.pos].emblem = '*';
+
+            suspect.eva = this->minmax(deepth, color, !color);
+
+            grid[suspect.g_t] = temp[1];
+
+            grid[suspect.pos] = temp[0];
+    }
+    return suspect.eva;
+}
+
+void hold_the_move(int start_of_suspected, bool color, int deepth, int end_of_suspected, board *frame) {
+
+    int inkrement = end_of_suspected-start_of_suspected;
+
+    mov *suspects = new mov[inkrement];
+    array_lock.lock();
+    for (int i = start_of_suspected; i < end_of_suspected; i++) suspects[i-start_of_suspected]=tab_of_possible_moves_4_threads[i];
+    array_lock.unlock();
+
+    for (int i = 0; i < inkrement; i++)
+        suspects[i].eva = frame->do_the_move(suspects[i], color, deepth);
+
+
+    array_lock.lock();
+    for (int i = start_of_suspected; i < end_of_suspected; i++)
+        tab_of_possible_moves_4_threads[i].eva = suspects[i-start_of_suspected].eva;
+    array_lock.unlock();
+
+}
+
+mov board::bip(bool color, int deepth, int number_of_th) {
+    tab_of_possible_moves_4_threads.clear();
+    auto start = std::chrono::steady_clock::now();
+    //std::vector<int> temp_moves;
+    //dynamic_arr<mov> tab_of_possible_moves_4_threads;
+    array temp_moves;
+    for (int i = 0; i < 64; ++i) {
+        if (grid[i].emblem != '*' && grid[i].color == color) {
+            temp_moves = this->array_of_possible(i);
+            for (int j = 0; j < temp_moves.size(); j++) {
+                mov tp(i, temp_moves[j], 0);
+                tab_of_possible_moves_4_threads.push_back(tp);
+            }
+        }
+    }
+    int casle = tab_of_possible_moves_4_threads.size();
+
+    temp_moves = castle(color);
+    for (int j = 0; j < temp_moves.size(); j++) {
+        mov tp(j, j, 0);
+        tab_of_possible_moves_4_threads.push_back(tp);
+
+    }
+
+    int lil = tab_of_possible_moves_4_threads.size();
+
+    for (int i = 0; i < 64; ++i)
+        if (grid[i].emblem == 'p' && grid[i].color == color) {
+            temp_moves = upgrade(color, i);
+            for (int j = 0; j < temp_moves.size(); j++) {
+                mov tp(i, temp_moves[j], 0);
+                tab_of_possible_moves_4_threads.push_back(tp);
+            }
+        }
+
+
+/// stuff
+    std::vector<std::thread> thread_vector;
+    int thread_start = 0;
+
+    int thread_end = tab_of_possible_moves_4_threads.size();// 20
+
+    int vector_spread = thread_end / number_of_th; // 20/2 = 10
+    int partial_end = thread_start + vector_spread ;
+    board boards_for_threads_to_let_them_play_on_their_own[number_of_th];
+
+    for(int i = 0; i < number_of_th; i++) {
+
+       board tp(*this);
+        boards_for_threads_to_let_them_play_on_their_own[i] = tp;
+
+    }
+
+    for (int i = 0; i < number_of_th; i++) {
+
+        thread_vector.emplace_back(hold_the_move, thread_start, color, deepth, partial_end, &boards_for_threads_to_let_them_play_on_their_own[i]);
+        thread_start += vector_spread;
+        if(i == number_of_th-1) partial_end = thread_end;
+        else partial_end += vector_spread;
+    }
+    for (auto &t:thread_vector)t.join();
+
+
+
+
+//// end of stuff
+    auto end = std::chrono::steady_clock::now();
+    tab_of_possible_moves_4_threads.show();
+    std::cout << "in " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << " seconds\n";
+    std::cout << "or " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+              << " milliseconds\n";
+    printf("\a");
+    if (color) {
+
+        return tab_of_possible_moves_4_threads[min(tab_of_possible_moves_4_threads)];
+    } else {
+
+        return tab_of_possible_moves_4_threads[max(tab_of_possible_moves_4_threads)];
+    }
+}
+
+mov board::bip(bool color, int deepth) {
+    auto start = std::chrono::steady_clock::now();
     //std::vector<int> temp_moves;
     dynamic_arr<mov> tab_of_possible_moves;
     array temp_moves;
@@ -731,6 +950,7 @@ mov board::bip(bool color, int deepth) {
         tab_of_possible_moves.push_back(tp);
 
     }
+
     piece temp[2]; // it's just to hold value
 
 
@@ -745,7 +965,7 @@ mov board::bip(bool color, int deepth) {
 
         grid[tab_of_possible_moves[i].pos].emblem = '*';
 
-        tab_of_possible_moves[i].eva = minmax(deepth, color, !color);
+        tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
 
         grid[tab_of_possible_moves[i].g_t] = temp[1];
 
@@ -763,7 +983,7 @@ mov board::bip(bool color, int deepth) {
                 grid[tab_of_possible_moves[i].g_t] = new piece('n', color, true);
                 grid[tab_of_possible_moves[i].pos].emblem = '*';
 
-                tab_of_possible_moves[i].eva = minmax(deepth, color, !color);
+                tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
 
                 grid[tab_of_possible_moves[i].g_t] = temp[0];
                 grid[tab_of_possible_moves[i].pos] = temp[1];
@@ -775,7 +995,7 @@ mov board::bip(bool color, int deepth) {
                 grid[tab_of_possible_moves[i].g_t] = new piece('q', color, true);
                 grid[tab_of_possible_moves[i].pos].emblem = '*';
 
-                tab_of_possible_moves[i].eva = minmax(deepth, color, !color);
+                tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
 
                 grid[tab_of_possible_moves[i].g_t] = temp[0];
                 grid[tab_of_possible_moves[i].pos] = temp[1];
@@ -786,7 +1006,7 @@ mov board::bip(bool color, int deepth) {
                     grid[5] = new piece('r', color, true);
                     grid[6] = new piece('k', color, true);
                     grid[7].emblem = '*';
-                    tab_of_possible_moves[i].eva = minmax(deepth, color, !color);
+                    tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
                     grid[4] = new piece('k', color, false);
                     grid[5].emblem = '*';
                     grid[6].emblem = '*';
@@ -796,7 +1016,7 @@ mov board::bip(bool color, int deepth) {
                     grid[61] = new piece('r', color, true);
                     grid[62] = new piece('k', color, true);
                     grid[63].emblem = '*';
-                    tab_of_possible_moves[i].eva = minmax(deepth, color, !color);
+                    tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
                     grid[60] = new piece('k', color, false);
                     grid[61].emblem = '*';
                     grid[62].emblem = '*';
@@ -811,7 +1031,7 @@ mov board::bip(bool color, int deepth) {
                     grid[2] = new piece('k', color, true);
                     grid[3] = new piece('r', color, true);
                     grid[4].emblem = '*';
-                    tab_of_possible_moves[i].eva = minmax(deepth, color, !color);
+                    tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
                     grid[0] = new piece('r', color, false);
                     grid[1].emblem = '*';
                     grid[2].emblem = '*';
@@ -823,7 +1043,7 @@ mov board::bip(bool color, int deepth) {
                     grid[48] = new piece('k', color, true);
                     grid[49] = new piece('r', color, true);
                     grid[50].emblem = '*';
-                    tab_of_possible_moves[i].eva = minmax(deepth, color, !color);
+                    tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
                     grid[46] = new piece('r', color, false);
                     grid[47].emblem = '*';
                     grid[48].emblem = '*';
@@ -845,7 +1065,7 @@ mov board::bip(bool color, int deepth) {
                 grid[tab_of_possible_moves[i].pos].emblem = '*';
                 grid[tab_of_possible_moves[i].g_t + shift_in_x].emblem = '*';
 
-                tab_of_possible_moves[i].eva = minmax(deepth, color, !color);
+                tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
 
                 grid[tab_of_possible_moves[i].g_t + shift_in_x] = temp[0];
                 grid[tab_of_possible_moves[i].g_t].emblem = '*';
@@ -855,7 +1075,11 @@ mov board::bip(bool color, int deepth) {
     }
 
     //     todo weź wymyśl jak zrobić castle w sensie bo on zajmuje jedno miejsce a wszystko inne dwa
+    auto end = std::chrono::steady_clock::now();
     tab_of_possible_moves.show();
+    std::cout << "in " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << " seconds\n";
+    std::cout << "or " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+              << " milliseconds\n";
     printf("\a");
     if (color) {
 
@@ -1359,6 +1583,88 @@ array board::castle(bool color) {
     /// na na na pierdolić
     return possible_moves;
 
+}
+
+array board::upgrade(bool color, int position) {
+    array possible_moves;
+
+    switch (position / 8) {
+        case 1:
+            if (!color && this->possible(position, position - 8)) {
+                possible_moves.push_back(position);
+                possible_moves.push_back(100);
+                possible_moves.push_back(position);
+                possible_moves.push_back(101);
+            }
+            break;
+        case 6:
+            if (color && this->possible(position, position + 8)) {
+                possible_moves.push_back(position);
+                possible_moves.push_back(100);
+                possible_moves.push_back(position);
+                possible_moves.push_back(101);
+            }
+            break;
+        default:
+            break;
+
+    }
+    return possible_moves;
+}
+
+array board::en_passant(bool color, int position) {
+    array possible_moves;
+    switch (position / 8) {
+        case 3:
+            if (!color && list_of_moves.size() > 3) {
+                int i = 0;
+                for (; i < list_of_moves.back().size(); i++) if (list_of_moves.back()[i] == '\t') break;
+                i++;
+                int hold21 = ctn(list_of_moves.back()[i + 2], list_of_moves.back()[i + 1]);
+                int hold54 = ctn(list_of_moves.back()[i + 5], list_of_moves.back()[i + 4]);
+
+                if (list_of_moves.back()[i] == 'p' && hold21 - hold54 == 16) {
+
+                    if (hold54 == position - 1 && position % 8 != 0) {
+
+
+                        possible_moves.push_back(hold21 - 8);
+                    }
+                    if (hold54 == position + 1 && position % 8 != 7) {
+
+                        possible_moves.push_back(hold21 - 8);
+                    }
+
+                }
+            }
+            break;
+        case 4:
+            if (color && list_of_moves.size() > 3) {
+                int i = 0;
+                for (; i < list_of_moves.back().size(); i++) if (list_of_moves.back()[i] == '\t') break;
+                i++;
+                int hold21 = ctn(list_of_moves.back()[i + 2], list_of_moves.back()[i + 1]);
+                int hold54 = ctn(list_of_moves.back()[i + 5], list_of_moves.back()[i + 4]);
+
+                if (list_of_moves.back()[i] == 'p' && hold21 - hold54 == 16) {
+
+
+                    if (hold54 == position - 1 && position % 8 != 0) {
+
+
+                        possible_moves.push_back(hold21 - 8);
+                    }
+                    if (hold54 == position + 1 && position % 8 != 7) {
+
+
+                        possible_moves.push_back(hold21 - 8);
+                    }
+                }
+            }
+            break;
+
+    }
+    return possible_moves;
 }
 
 array board::stuff_with_lil_ones(bool color, int position) {
@@ -2349,21 +2655,16 @@ array board::array_of_possible(int position) {
             break;
         case 'r': {
 
-            dynamic_arr<array> before_processing(4);
-
-            before_processing = this->full_board_of_moves_4_rook[position];
-
-
-            for (int i = 0; i < before_processing.size(); i++) {
-                for (int j = 0; j < before_processing[i].size(); j++) {
+            for (int i = 0; i < this->full_board_of_moves_4_rook[position].size(); i++) {
+                for (int j = 0; j < this->full_board_of_moves_4_rook[position][i].size(); j++) {
 
 
-                    if (grid[before_processing[i][j]].emblem != '*') {
-                        if (grid[before_processing[i][j]].color != color)
-                            all_of_possible_moves.push_back(before_processing[i][j]);
+                    if (grid[this->full_board_of_moves_4_rook[position][i][j]].emblem != '*') {
+                        if (grid[this->full_board_of_moves_4_rook[position][i][j]].color != color)
+                            all_of_possible_moves.push_back(this->full_board_of_moves_4_rook[position][i][j]);
                         break;
                     }
-                    all_of_possible_moves.push_back(before_processing[i][j]);
+                    all_of_possible_moves.push_back(this->full_board_of_moves_4_rook[position][i][j]);
 
                 }
             }
@@ -2373,16 +2674,15 @@ array board::array_of_possible(int position) {
 
             break;
         case 'b': {
-            dynamic_arr<array> before_processing;
-            before_processing = this->full_board_of_moves_4_bishop[position];
+
             for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < before_processing[i].size(); j++) {
-                    if (this->grid[before_processing[i][j]].emblem != '*') {
-                        if (this->grid[before_processing[i][j]].color == color)break;
-                        all_of_possible_moves.push_back(before_processing[i][j]);
+                for (int j = 0; j < full_board_of_moves_4_bishop[position][i].size(); j++) {
+                    if (this->grid[full_board_of_moves_4_bishop[position][i][j]].emblem != '*') {
+                        if (this->grid[full_board_of_moves_4_bishop[position][i][j]].color == color)break;
+                        all_of_possible_moves.push_back(full_board_of_moves_4_bishop[position][i][j]);
                         break;
                     }
-                    all_of_possible_moves.push_back(before_processing[i][j]);
+                    all_of_possible_moves.push_back(full_board_of_moves_4_bishop[position][i][j]);
 
                 }
             }
@@ -2453,35 +2753,32 @@ array board::array_of_possible(int position) {
             break;
 
         case 'q': {
-            dynamic_arr<array> before_processing;
-            before_processing = this->full_board_of_moves_4_rook[position];
 
-            for (int i = 0; i < before_processing.size(); i++) {
-                for (int j = 0; j < before_processing[i].size(); j++) {
-                    if (this->grid[before_processing[i][j]].emblem != '*') {
-                        if (this->grid[before_processing[i][j]].color != color)
-                            all_of_possible_moves.push_back(before_processing[i][j]);
+            for (int i = 0; i < full_board_of_moves_4_rook[position].size(); i++) {
+                for (int j = 0; j < full_board_of_moves_4_rook[position][i].size(); j++) {
+                    if (this->grid[full_board_of_moves_4_rook[position][i][j]].emblem != '*') {
+                        if (this->grid[full_board_of_moves_4_rook[position][i][j]].color != color)
+                            all_of_possible_moves.push_back(full_board_of_moves_4_rook[position][i][j]);
                         break;
                     }
-                    all_of_possible_moves.push_back(before_processing[i][j]);
+                    all_of_possible_moves.push_back(full_board_of_moves_4_rook[position][i][j]);
 
                 }
             }
 
-            before_processing = this->full_board_of_moves_4_bishop[position];
             for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < before_processing[i].size(); j++) {
-                    if (this->grid[before_processing[i][j]].emblem != '*') {
-                        if (this->grid[before_processing[i][j]].color != color)
-                            all_of_possible_moves.push_back(before_processing[i][j]);
+                for (int j = 0; j < full_board_of_moves_4_bishop[position][i].size(); j++) {
+                    if (this->grid[full_board_of_moves_4_bishop[position][i][j]].emblem != '*') {
+                        if (this->grid[full_board_of_moves_4_bishop[position][i][j]].color != color)
+                            all_of_possible_moves.push_back(full_board_of_moves_4_bishop[position][i][j]);
                         break;
                     }
-                    all_of_possible_moves.push_back(before_processing[i][j]);
+                    all_of_possible_moves.push_back(full_board_of_moves_4_bishop[position][i][j]);
 
                 }
             }
         }
-        break;
+            break;
     }
     return all_of_possible_moves;
 #endif
@@ -2512,15 +2809,17 @@ bool board::possible(int position, int go_to) {
         }
             break;
         case 'n': {
-            int all_of_possible_moves[8] = {position - 17, position - 15, position - 10, position - 6, position + 6, position + 10,
-                           position + 15, position + 17};
+            int all_of_possible_moves[8] = {position - 17, position - 15, position - 10, position - 6, position + 6,
+                                            position + 10,
+                                            position + 15, position + 17};
             return binary(go_to, all_of_possible_moves);
         }
             break;
         case 'k': {
-            int all_of_possible_moves[8] = {position - 9, position - 8, position - 7, position - 1, position + 1, position + 7,
-                           position + 8,
-                           position + 9};
+            int all_of_possible_moves[8] = {position - 9, position - 8, position - 7, position - 1, position + 1,
+                                            position + 7,
+                                            position + 8,
+                                            position + 9};
             return binary(go_to, all_of_possible_moves);
         }
             break;
@@ -2528,70 +2827,109 @@ bool board::possible(int position, int go_to) {
 
 
             int b = px + py;
-            ///         / <-this one
-            if (b == gy + gx) {
-                array all_of_possible_moves;
+            if (b == gy + gx) {/// \ <- this
+                if (gy < py) {
+
+                    for (int i = 0; i < full_board_of_moves_4_bishop[position][2].size(); i++) {
+                        if (grid[full_board_of_moves_4_bishop[position][2][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_bishop[position][2][i]].color != color)
+                                return full_board_of_moves_4_bishop[position][2][i] == go_to;
+                            else return false;
+
+                        if (full_board_of_moves_4_bishop[position][2][i] == go_to) return true;
+                    }
+                } else {
+                    for (int i = 0; i < full_board_of_moves_4_bishop[position][0].size(); i++) {
+                        if (grid[full_board_of_moves_4_bishop[position][0][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_bishop[position][0][i]].color != color)
+                                return full_board_of_moves_4_bishop[position][0][i] == go_to;
+                            else return false;
+
+                        if (full_board_of_moves_4_bishop[position][0][i] == go_to) return true;
+                    }
+                }
 
 
-                if (gy < py) all_of_possible_moves = full_board_of_moves_4_bishop[position][2];
-                else all_of_possible_moves = full_board_of_moves_4_bishop[position][0];
-
-
-                for (int i = 0; i < all_of_possible_moves.size(); i++) {
-                    if (grid[all_of_possible_moves[i]].emblem != '*')
-                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
+                for (int i = 0; i < full_board_of_moves_4_bishop[position][2].size(); i++) {
+                    if (grid[full_board_of_moves_4_bishop[position][2][i]].emblem != '*')
+                        if (grid[full_board_of_moves_4_bishop[position][2][i]].color != color)
+                            return full_board_of_moves_4_bishop[position][2][i] == go_to;
                         else return false;
-                    if (all_of_possible_moves[i] == go_to) return true;
+
+                    if (full_board_of_moves_4_bishop[position][2][i] == go_to) return true;
                 }
             }
 
-            /// \ <-this one
+
             b = py - px;
-            if (b + gx == gy) {// lg to pd
-                array all_of_possible_moves;
+            if (b + gx == gy) {     /// \ <-this one
+                if (gy < py) {
+                    for (int i = 0; i < full_board_of_moves_4_bishop[position][3].size(); i++) {
+                        if (grid[full_board_of_moves_4_bishop[position][3][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_bishop[position][3][i]].color != color)
+                                return full_board_of_moves_4_bishop[position][3][i] == go_to;
+                            else return false;
 
+                        if (full_board_of_moves_4_bishop[position][3][i] == go_to) return true;
+                    }
+                } else {
+                    for (int i = 0; i < full_board_of_moves_4_bishop[position][1].size(); i++) {
+                        if (grid[full_board_of_moves_4_bishop[position][1][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_bishop[position][1][i]].color != color)
+                                return full_board_of_moves_4_bishop[position][1][i] == go_to;
+                            else return false;
 
-                /// tu idziemy do góry
-                if (gy < py) all_of_possible_moves = full_board_of_moves_4_bishop[position][3];
-
-                else all_of_possible_moves = full_board_of_moves_4_bishop[position][1];
-
-
-                for (int i = 0; i < all_of_possible_moves.size(); i++) {
-                    if (grid[all_of_possible_moves[i]].emblem != '*')
-                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
-                        else return false;
-                    if (all_of_possible_moves[i] == go_to) return true;
+                        if (full_board_of_moves_4_bishop[position][2][i] == go_to) return true;
+                    }
                 }
 
             }
 
 
             if (px == gx) {
-                array all_of_possible_moves;
-                if (py > gy) all_of_possible_moves = full_board_of_moves_4_rook[position][2];
-                else all_of_possible_moves = full_board_of_moves_4_rook[position][0];
 
+                if (py < gy) {
 
-                for (int i = 0; i < all_of_possible_moves.size(); i++) {
-                    if (grid[all_of_possible_moves[i]].emblem != '*')
-                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
-                        else return false;
-                    if (all_of_possible_moves[i] == go_to) return true;
+                    for (int i = 0; i < full_board_of_moves_4_rook[position][2].size(); i++) {
+                        if (grid[full_board_of_moves_4_rook[position][1][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_rook[position][1][i]].color != color)
+                                return full_board_of_moves_4_rook[position][1][i] == go_to;
+
+                            else return false;
+                        if (full_board_of_moves_4_rook[position][1][i] == go_to) return true;
+                    }
+                } else {
+                    for (int i = 0; i < full_board_of_moves_4_rook[position][2].size(); i++) {
+                        if (grid[full_board_of_moves_4_rook[position][3][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_rook[position][3][i]].color != color)
+                                return full_board_of_moves_4_rook[position][3][i] == go_to;
+                            else return false;
+                        if (full_board_of_moves_4_rook[position][3][i] == go_to) return true;
+                    }
                 }
+
+
             }
             if (py == gy) {
 
-                array all_of_possible_moves;
 
-                if (px > gx) all_of_possible_moves = full_board_of_moves_4_rook[position][3];
-                else all_of_possible_moves = full_board_of_moves_4_rook[position][1];
+                if (px > gx) {
+                    for (int i = 0; i < full_board_of_moves_4_rook[position][2].size(); i++) {
+                        if (grid[full_board_of_moves_4_rook[position][0][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_rook[position][0][i]].color != color)
+                                return full_board_of_moves_4_rook[position][0][i] == go_to;
+                            else return false;
+                        if (full_board_of_moves_4_rook[position][0][i] == go_to) return true;
+                    }
 
-                for (int i = 0; i < all_of_possible_moves.size(); i++) {
-                    if (grid[all_of_possible_moves[i]].emblem != '*')
-                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
-                        else return false;
-                    if (all_of_possible_moves[i] == go_to) return true;
+                } else {
+                    for (int i = 0; i < full_board_of_moves_4_rook[position][2].size(); i++) {
+                        if (grid[full_board_of_moves_4_rook[position][2][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_rook[position][2][i]].color != color)
+                                return full_board_of_moves_4_rook[position][2][i] == go_to;
+                            else return false;
+                        if (full_board_of_moves_4_rook[position][2][i] == go_to) return true;
+                    }
                 }
             }
         }
@@ -2599,71 +2937,133 @@ bool board::possible(int position, int go_to) {
             break;
         case 'b': {
             int b = px + py;
-            ///         / <-this one
-            if (b == gy + gx) {
-                array all_of_possible_moves;
+            if (b == gy + gx) {/// \ <- this
+                if (gy < py) {
+
+                    for (int i = 0; i < full_board_of_moves_4_bishop[position][2].size(); i++) {
+                        if (grid[full_board_of_moves_4_bishop[position][2][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_bishop[position][2][i]].color != color)
+                                return full_board_of_moves_4_bishop[position][2][i] == go_to;
+                            else return false;
+
+                        if (full_board_of_moves_4_bishop[position][2][i] == go_to) return true;
+                    }
+                } else {
+                    for (int i = 0; i < full_board_of_moves_4_bishop[position][0].size(); i++) {
+                        if (grid[full_board_of_moves_4_bishop[position][0][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_bishop[position][0][i]].color != color)
+                                return full_board_of_moves_4_bishop[position][0][i] == go_to;
+                            else return false;
+
+                        if (full_board_of_moves_4_bishop[position][0][i] == go_to) return true;
+                    }
+                }
 
 
-                if (gy < py) all_of_possible_moves = full_board_of_moves_4_bishop[position][2];
-                else all_of_possible_moves = full_board_of_moves_4_bishop[position][0];
-
-
-                for (int i = 0; i < all_of_possible_moves.size(); i++) {
-                    if (grid[all_of_possible_moves[i]].emblem != '*')
-                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
+                for (int i = 0; i < full_board_of_moves_4_bishop[position][2].size(); i++) {
+                    if (grid[full_board_of_moves_4_bishop[position][2][i]].emblem != '*')
+                        if (grid[full_board_of_moves_4_bishop[position][2][i]].color != color)
+                            return full_board_of_moves_4_bishop[position][2][i] == go_to;
                         else return false;
-                    if (all_of_possible_moves[i] == go_to) return true;
+
+                    if (full_board_of_moves_4_bishop[position][2][i] == go_to) return true;
                 }
             }
 
-            /// \ <-this one
+
             b = py - px;
-            if (b + gx == gy) {// lg to pd
-                array all_of_possible_moves;
+            if (b + gx == gy) {     /// \ <-this one
+                if (gy < py) {
+                    for (int i = 0; i < full_board_of_moves_4_bishop[position][3].size(); i++) {
+                        if (grid[full_board_of_moves_4_bishop[position][3][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_bishop[position][3][i]].color != color)
+                                return full_board_of_moves_4_bishop[position][3][i] == go_to;
+                            else return false;
 
+                        if (full_board_of_moves_4_bishop[position][3][i] == go_to) return true;
+                    }
+                } else {
+                    for (int i = 0; i < full_board_of_moves_4_bishop[position][1].size(); i++) {
+                        if (grid[full_board_of_moves_4_bishop[position][1][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_bishop[position][1][i]].color != color)
+                                return full_board_of_moves_4_bishop[position][1][i] == go_to;
+                            else return false;
 
-                /// tu idziemy do góry
-                if (gy < py) all_of_possible_moves = full_board_of_moves_4_bishop[position][3];
-
-                else all_of_possible_moves = full_board_of_moves_4_bishop[position][1];
-
-
-                for (int i = 0; i < all_of_possible_moves.size(); i++) {
-                    if (grid[all_of_possible_moves[i]].emblem != '*')
-                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
-                        else return false;
-                    if (all_of_possible_moves[i] == go_to) return true;
+                        if (full_board_of_moves_4_bishop[position][2][i] == go_to) return true;
+                    }
                 }
+
+            }
+
+
+            if (px == gx) {
+
+                if (py < gy) {
+
+                    for (int i = 0; i < full_board_of_moves_4_rook[position][2].size(); i++) {
+                        if (grid[full_board_of_moves_4_rook[position][1][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_rook[position][1][i]].color != color)
+                                return full_board_of_moves_4_rook[position][1][i] == go_to;
+
+                            else return false;
+                        if (full_board_of_moves_4_rook[position][1][i] == go_to) return true;
+                    }
+                } else {
+                    for (int i = 0; i < full_board_of_moves_4_rook[position][2].size(); i++) {
+                        if (grid[full_board_of_moves_4_rook[position][3][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_rook[position][3][i]].color != color)
+                                return full_board_of_moves_4_rook[position][3][i] == go_to;
+                            else return false;
+                        if (full_board_of_moves_4_rook[position][3][i] == go_to) return true;
+                    }
+                }
+
 
             }
         }
             break;
         case 'r': {
             if (px == gx) {
-                array all_of_possible_moves;
-                if (py > gy) all_of_possible_moves = full_board_of_moves_4_rook[position][2];
-                else all_of_possible_moves = full_board_of_moves_4_rook[position][0];
+                if (py < gy) {
 
+                    for (int i = 0; i < full_board_of_moves_4_rook[position][2].size(); i++) {
+                        if (grid[full_board_of_moves_4_rook[position][1][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_rook[position][1][i]].color != color)
+                                return full_board_of_moves_4_rook[position][1][i] == go_to;
 
-                for (int i = 0; i < all_of_possible_moves.size(); i++) {
-                    if (grid[all_of_possible_moves[i]].emblem != '*')
-                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
-                        else return false;
-                    if (all_of_possible_moves[i] == go_to) return true;
+                            else return false;
+                        if (full_board_of_moves_4_rook[position][1][i] == go_to) return true;
+                    }
+                } else {
+                    for (int i = 0; i < full_board_of_moves_4_rook[position][2].size(); i++) {
+                        if (grid[full_board_of_moves_4_rook[position][3][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_rook[position][3][i]].color != color)
+                                return full_board_of_moves_4_rook[position][3][i] == go_to;
+                            else return false;
+                        if (full_board_of_moves_4_rook[position][3][i] == go_to) return true;
+                    }
                 }
+
+
             }
             if (py == gy) {
+                if (px > gx) {
+                    for (int i = 0; i < full_board_of_moves_4_rook[position][2].size(); i++) {
+                        if (grid[full_board_of_moves_4_rook[position][0][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_rook[position][0][i]].color != color)
+                                return full_board_of_moves_4_rook[position][0][i] == go_to;
+                            else return false;
+                        if (full_board_of_moves_4_rook[position][0][i] == go_to) return true;
+                    }
 
-                array all_of_possible_moves;
-
-                if (px > gx) all_of_possible_moves = full_board_of_moves_4_rook[position][3];
-                else all_of_possible_moves = full_board_of_moves_4_rook[position][1];
-
-                for (int i = 0; i < all_of_possible_moves.size(); i++) {
-                    if (grid[all_of_possible_moves[i]].emblem != '*')
-                        if (grid[all_of_possible_moves[i]].color != color) return all_of_possible_moves[i] == go_to;
-                        else return false;
-                    if (all_of_possible_moves[i] == go_to) return true;
+                } else {
+                    for (int i = 0; i < full_board_of_moves_4_rook[position][2].size(); i++) {
+                        if (grid[full_board_of_moves_4_rook[position][2][i]].emblem != '*')
+                            if (grid[full_board_of_moves_4_rook[position][2][i]].color != color)
+                                return full_board_of_moves_4_rook[position][2][i] == go_to;
+                            else return false;
+                        if (full_board_of_moves_4_rook[position][2][i] == go_to) return true;
+                    }
                 }
             }
         }

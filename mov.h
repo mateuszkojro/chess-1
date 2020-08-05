@@ -56,7 +56,7 @@ public:
     }
 
 
-    int size() { return siz; }
+    int size() { return this->siz; }
 
     void size(int siz) { this->siz = siz; }
 
@@ -178,9 +178,18 @@ public:
     }
 
 
-    T &operator[](int pos) {
 
+    T &operator[](int pos) {
+        if(pos>siz) {
+
+
+            printf("lelelele");
+
+        }
         return tab[pos];
+
+
+
     }
 
     dynamic_arr &operator=(dynamic_arr &a) {
@@ -194,11 +203,18 @@ public:
 
     void size(int siz) { this->siz = siz; }
 
+    void clear () {
+        delete []tab;
+        this->max_siz = 80;
+        this->siz = 0;
+        this->tab = new T[80];
+    }
+
     bool empty() { return siz == 0; }
 
 
     void push_back(mov a) {
-        if (siz == max_siz) {
+        if (siz >= max_siz) {
             dynamic_arr<T> tp(siz);
             for (int i = 0; i < siz; i++) tp[i] = this->tab[i];
             delete[] tab;
