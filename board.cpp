@@ -188,14 +188,14 @@ int board::move(bool color) {
                                     grid[58] = new piece('k', color, 1);
                                     grid[59] = new piece('r', color, 1);
                                     grid[60] = new piece();
-                                    std::string temp;
-                                    temp.push_back('o');
-                                    temp.push_back('-');
-                                    temp.push_back('o');
-                                    temp.push_back('-');
-                                    temp.push_back('o');
-                                    temp.push_back('\t');
-                                    list_of_moves.push_back(temp);
+                                    std::string all_of_possible_moves;
+                                    all_of_possible_moves.push_back('o');
+                                    all_of_possible_moves.push_back('-');
+                                    all_of_possible_moves.push_back('o');
+                                    all_of_possible_moves.push_back('-');
+                                    all_of_possible_moves.push_back('o');
+                                    all_of_possible_moves.push_back('\t');
+                                    list_of_moves.push_back(all_of_possible_moves);
                                     return 0;
                                 }
                             }
@@ -245,12 +245,12 @@ int board::move(bool color) {
                                     grid[62] = new piece('k', color, true);
 
 
-                                    std::string temp;
-                                    temp.push_back('o');
-                                    temp.push_back('-');
-                                    temp.push_back('o');
-                                    temp.push_back('\t');
-                                    list_of_moves.push_back(temp);
+                                    std::string all_of_possible_moves;
+                                    all_of_possible_moves.push_back('o');
+                                    all_of_possible_moves.push_back('-');
+                                    all_of_possible_moves.push_back('o');
+                                    all_of_possible_moves.push_back('\t');
+                                    list_of_moves.push_back(all_of_possible_moves);
 
                                     return 0;
                                 }
@@ -320,15 +320,15 @@ int board::move(bool color) {
                                     grid[hold54] = new piece();
                                     grid[position] = new piece();
 
-                                    std::string temp;
-                                    temp.push_back(grid[go_to].emblem);
-                                    temp.push_back(holder[0]);
-                                    temp.push_back(holder[1]);
-                                    temp.push_back('-');
-                                    temp.push_back(holder[2]);
-                                    temp.push_back(holder[3]);
-                                    temp.push_back('\t');
-                                    list_of_moves.push_back(temp);
+                                    std::string all_of_possible_moves;
+                                    all_of_possible_moves.push_back(grid[go_to].emblem);
+                                    all_of_possible_moves.push_back(holder[0]);
+                                    all_of_possible_moves.push_back(holder[1]);
+                                    all_of_possible_moves.push_back('-');
+                                    all_of_possible_moves.push_back(holder[2]);
+                                    all_of_possible_moves.push_back(holder[3]);
+                                    all_of_possible_moves.push_back('\t');
+                                    list_of_moves.push_back(all_of_possible_moves);
                                     return 0;
                                 }
                             }
@@ -354,15 +354,15 @@ int board::move(bool color) {
                     list_of_moves.back().push_back(holder[3]);
                     list_of_moves.back().push_back('\n');
                 } else {
-                    std::string temp;
-                    temp.push_back(grid[go_to].emblem);
-                    temp.push_back(holder[0]);
-                    temp.push_back(holder[1]);
-                    temp.push_back('-');
-                    temp.push_back(holder[2]);
-                    temp.push_back(holder[3]);
-                    temp.push_back('\t');
-                    list_of_moves.push_back(temp);
+                    std::string all_of_possible_moves;
+                    all_of_possible_moves.push_back(grid[go_to].emblem);
+                    all_of_possible_moves.push_back(holder[0]);
+                    all_of_possible_moves.push_back(holder[1]);
+                    all_of_possible_moves.push_back('-');
+                    all_of_possible_moves.push_back(holder[2]);
+                    all_of_possible_moves.push_back(holder[3]);
+                    all_of_possible_moves.push_back('\t');
+                    list_of_moves.push_back(all_of_possible_moves);
                 }
 
                 int j = 0;
@@ -426,7 +426,7 @@ int board::move(bool color) {
 
 void board::admin() {
     bool color = false;
-    std::string temp;
+    std::string all_of_possible_moves;
     bool do_it = true;
     while (1 < 2) {
 
@@ -436,8 +436,8 @@ void board::admin() {
         }
         do_it = true;
         printf("> ");
-        std::cin >> temp;
-        switch (temp[0]) {
+        std::cin >> all_of_possible_moves;
+        switch (all_of_possible_moves[0]) {
             case 'q':
                 return;
             case 'o':
@@ -459,8 +459,8 @@ void board::admin() {
                 do_it = false;
                 break;
             case 'a':
-                grid[ctn(temp[3], temp[2])] = new piece(
-                        temp[1], static_cast<int>(temp[4]) - 48);
+                grid[ctn(all_of_possible_moves[3], all_of_possible_moves[2])] = new piece(
+                        all_of_possible_moves[1], static_cast<int>(all_of_possible_moves[4]) - 48);
                 break;
 
                 break;
@@ -468,12 +468,12 @@ void board::admin() {
                 for (int i = 0; i < 64; ++i) grid[i] = new piece();
                 break;
             case 's':
-                grid[ctn(temp[2], temp[1])] = new piece();
+                grid[ctn(all_of_possible_moves[2], all_of_possible_moves[1])] = new piece();
                 break;
             case '*': {
-                if (temp.size() == 3) {
-                    bool color = static_cast<bool>(static_cast<int>(temp[1]) - 48);
-                    int deepth = static_cast<int>(temp[2]) - 48;
+                if (all_of_possible_moves.size() == 3) {
+                    bool color = static_cast<bool>(static_cast<int>(all_of_possible_moves[1]) - 48);
+                    int deepth = static_cast<int>(all_of_possible_moves[2]) - 48;
                     mov tp = bip(color, deepth);
                     printf("%c%d -> ", (char) tp.pos % 8 + 97, ((tp.pos / 8) - 8) * (-1));
                     printf("%c%d  ", (char) tp.g_t % 8 + 97, ((tp.g_t / 8) - 8) * (-1));
@@ -481,9 +481,9 @@ void board::admin() {
                     do_it = false;
                 } else {
 
-                    bool color = static_cast<bool>(static_cast<int>(temp[1]) - 48);
-                    int deepth = static_cast<int>(temp[2]) - 48;
-                    int threads = static_cast<int>(temp[3]) - 48;
+                    bool color = static_cast<bool>(static_cast<int>(all_of_possible_moves[1]) - 48);
+                    int deepth = static_cast<int>(all_of_possible_moves[2]) - 48;
+                    int threads = static_cast<int>(all_of_possible_moves[3]) - 48;
                     mov tp = bip(color, deepth, threads);
                     printf("%c%d -> ", (char) tp.pos % 8 + 97, ((tp.pos / 8) - 8) * (-1));
                     printf("%c%d  ", (char) tp.g_t % 8 + 97, ((tp.g_t / 8) - 8) * (-1));
@@ -495,11 +495,12 @@ void board::admin() {
             }
                 break;
             case 'p': {
-                if (temp.size() == 5)
-                    printf("%d ", this->possible(ctn(temp[2], temp[1]), ctn(temp[4], temp[3])));
+                if (all_of_possible_moves.size() == 5)
+                    printf("%d ", this->possible(ctn(all_of_possible_moves[2], all_of_possible_moves[1]),
+                                                 ctn(all_of_possible_moves[4], all_of_possible_moves[3])));
                 else {
-                    array legal = this->array_of_possible(ctn(temp[2], temp[1]));
-                    if (temp.size() == 4 && temp[3] == 's') {
+                    array legal = this->array_of_possible(ctn(all_of_possible_moves[2], all_of_possible_moves[1]));
+                    if (all_of_possible_moves.size() == 4 && all_of_possible_moves[3] == 's') {
                         std::vector<char> char_legal;
                         std::vector<bool> color_legal;
                         std::vector<bool> moved_legal;
@@ -530,7 +531,7 @@ void board::admin() {
                 break;
             case 'l': {
                 std::ifstream myfile;
-                myfile.open(temp.substr(1, temp.size()), std::ios::in);
+                myfile.open(all_of_possible_moves.substr(1, all_of_possible_moves.size()), std::ios::in);
                 if (myfile.good()) {
                     char a;
                     for (int i = 0; i < 64; ++i) {
@@ -559,7 +560,7 @@ void board::admin() {
                 break;
             case 'd': {
                 std::ofstream myfile;
-                myfile.open(temp.substr(1, temp.size()), std::ios::out);
+                myfile.open(all_of_possible_moves.substr(1, all_of_possible_moves.size()), std::ios::out);
                 if (myfile.good()) {
 
                     for (int i = 0; i < 64; ++i) {
@@ -577,8 +578,9 @@ void board::admin() {
             }
                 break;
             case '-': {
-                grid[ctn(temp[4], temp[3])] = grid[ctn(temp[2], temp[1])];
-                grid[ctn(temp[2], temp[1])] = new piece();
+                grid[ctn(all_of_possible_moves[4], all_of_possible_moves[3])] = grid[ctn(all_of_possible_moves[2],
+                                                                                         all_of_possible_moves[1])];
+                grid[ctn(all_of_possible_moves[2], all_of_possible_moves[1])] = new piece();
 
             }
                 break;
@@ -593,8 +595,8 @@ void board::pvp() {
 
     int sum = 0;
     bool color = false;
-    std::string temp = "white\tblack\n";
-    if (list_of_moves.empty())list_of_moves.push_back(temp);
+    std::string all_of_possible_moves = "white\tblack\n";
+    if (list_of_moves.empty())list_of_moves.push_back(all_of_possible_moves);
     while (1 < 2) {
         if (list_of_moves.back().back() == '\n') color = BLACK;
         else if (list_of_moves.back().back() == '\t') color = WHITE;
@@ -717,32 +719,32 @@ dynamic_arr<mov> tab_of_possible_moves_4_threads;
 
 double board::do_the_move(mov suspect, bool color, int deepth) {
 
-    piece temp[2];
+    piece all_of_possible_moves[2];
     switch (suspect.g_t) {
         case 100:
 
-            temp[0] = grid[suspect.g_t]; //i+1
-            temp[1] = grid[suspect.pos];
+            all_of_possible_moves[0] = grid[suspect.g_t]; //i+1
+            all_of_possible_moves[1] = grid[suspect.pos];
 
             grid[suspect.g_t] = new piece('n', color, true);
             grid[suspect.pos].emblem = '*';
 
             suspect.eva = this->minmax(deepth, color, !color);
 
-            grid[suspect.g_t] = temp[0];
-            grid[suspect.pos] = temp[1];
+            grid[suspect.g_t] = all_of_possible_moves[0];
+            grid[suspect.pos] = all_of_possible_moves[1];
             break;
         case 101:
-            temp[0] = grid[suspect.g_t];
-            temp[1] = grid[suspect.pos];
+            all_of_possible_moves[0] = grid[suspect.g_t];
+            all_of_possible_moves[1] = grid[suspect.pos];
 
             grid[suspect.g_t] = new piece('q', color, true);
             grid[suspect.pos].emblem = '*';
 
             suspect.eva = this->minmax(deepth, color, !color);
 
-            grid[suspect.g_t] = temp[0];
-            grid[suspect.pos] = temp[1];
+            grid[suspect.g_t] = all_of_possible_moves[0];
+            grid[suspect.pos] = all_of_possible_moves[1];
             break;
         case 66:
             if (color) {
@@ -797,8 +799,8 @@ double board::do_the_move(mov suspect, bool color, int deepth) {
             break;
         default:
 
-            temp[0] = grid[suspect.pos];
-            temp[1] = grid[suspect.g_t];
+            all_of_possible_moves[0] = grid[suspect.pos];
+            all_of_possible_moves[1] = grid[suspect.g_t];
 
             grid[suspect.g_t] = grid[suspect.pos];
 
@@ -808,20 +810,21 @@ double board::do_the_move(mov suspect, bool color, int deepth) {
 
             suspect.eva = this->minmax(deepth, color, !color);
 
-            grid[suspect.g_t] = temp[1];
+            grid[suspect.g_t] = all_of_possible_moves[1];
 
-            grid[suspect.pos] = temp[0];
+            grid[suspect.pos] = all_of_possible_moves[0];
     }
     return suspect.eva;
 }
 
 void hold_the_move(int start_of_suspected, bool color, int deepth, int end_of_suspected, board *frame) {
 
-    int inkrement = end_of_suspected-start_of_suspected;
+    int inkrement = end_of_suspected - start_of_suspected;
 
     mov *suspects = new mov[inkrement];
     array_lock.lock();
-    for (int i = start_of_suspected; i < end_of_suspected; i++) suspects[i-start_of_suspected]=tab_of_possible_moves_4_threads[i];
+    for (int i = start_of_suspected; i < end_of_suspected; i++)
+        suspects[i - start_of_suspected] = tab_of_possible_moves_4_threads[i];
     array_lock.unlock();
 
     for (int i = 0; i < inkrement; i++)
@@ -830,7 +833,7 @@ void hold_the_move(int start_of_suspected, bool color, int deepth, int end_of_su
 
     array_lock.lock();
     for (int i = start_of_suspected; i < end_of_suspected; i++)
-        tab_of_possible_moves_4_threads[i].eva = suspects[i-start_of_suspected].eva;
+        tab_of_possible_moves_4_threads[i].eva = suspects[i - start_of_suspected].eva;
     array_lock.unlock();
 
 }
@@ -838,22 +841,22 @@ void hold_the_move(int start_of_suspected, bool color, int deepth, int end_of_su
 mov board::bip(bool color, int deepth, int number_of_th) {
     tab_of_possible_moves_4_threads.clear();
     auto start = std::chrono::steady_clock::now();
-    //std::vector<int> temp_moves;
+    //std::vector<int> all_of_possible_moves_moves;
     //dynamic_arr<mov> tab_of_possible_moves_4_threads;
-    array temp_moves;
+    array all_of_possible_moves_moves;
     for (int i = 0; i < 64; ++i) {
         if (grid[i].emblem != '*' && grid[i].color == color) {
-            temp_moves = this->array_of_possible(i);
-            for (int j = 0; j < temp_moves.size(); j++) {
-                mov tp(i, temp_moves[j], 0);
+            all_of_possible_moves_moves = this->array_of_possible(i);
+            for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
+                mov tp(i, all_of_possible_moves_moves[j], 0);
                 tab_of_possible_moves_4_threads.push_back(tp);
             }
         }
     }
     int casle = tab_of_possible_moves_4_threads.size();
 
-    temp_moves = castle(color);
-    for (int j = 0; j < temp_moves.size(); j++) {
+    all_of_possible_moves_moves = castle(color);
+    for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
         mov tp(j, j, 0);
         tab_of_possible_moves_4_threads.push_back(tp);
 
@@ -863,9 +866,9 @@ mov board::bip(bool color, int deepth, int number_of_th) {
 
     for (int i = 0; i < 64; ++i)
         if (grid[i].emblem == 'p' && grid[i].color == color) {
-            temp_moves = upgrade(color, i);
-            for (int j = 0; j < temp_moves.size(); j++) {
-                mov tp(i, temp_moves[j], 0);
+            all_of_possible_moves_moves = upgrade(color, i);
+            for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
+                mov tp(i, all_of_possible_moves_moves[j], 0);
                 tab_of_possible_moves_4_threads.push_back(tp);
             }
         }
@@ -878,21 +881,22 @@ mov board::bip(bool color, int deepth, int number_of_th) {
     int thread_end = tab_of_possible_moves_4_threads.size();// 20
 
     int vector_spread = thread_end / number_of_th; // 20/2 = 10
-    int partial_end = thread_start + vector_spread ;
+    int partial_end = thread_start + vector_spread;
     board boards_for_threads_to_let_them_play_on_their_own[number_of_th];
 
-    for(int i = 0; i < number_of_th; i++) {
+    for (int i = 0; i < number_of_th; i++) {
 
-       board tp(*this);
+        board tp(*this);
         boards_for_threads_to_let_them_play_on_their_own[i] = tp;
 
     }
 
     for (int i = 0; i < number_of_th; i++) {
 
-        thread_vector.emplace_back(hold_the_move, thread_start, color, deepth, partial_end, &boards_for_threads_to_let_them_play_on_their_own[i]);
+        thread_vector.emplace_back(hold_the_move, thread_start, color, deepth, partial_end,
+                                   &boards_for_threads_to_let_them_play_on_their_own[i]);
         thread_start += vector_spread;
-        if(i == number_of_th-1) partial_end = thread_end;
+        if (i == number_of_th - 1) partial_end = thread_end;
         else partial_end += vector_spread;
     }
     for (auto &t:thread_vector)t.join();
@@ -918,14 +922,14 @@ mov board::bip(bool color, int deepth, int number_of_th) {
 
 mov board::bip(bool color, int deepth) {
     auto start = std::chrono::steady_clock::now();
-    //std::vector<int> temp_moves;
+    //std::vector<int> all_of_possible_moves_moves;
     dynamic_arr<mov> tab_of_possible_moves;
-    array temp_moves;
+    array all_of_possible_moves_moves;
     for (int i = 0; i < 64; ++i) {
         if (grid[i].emblem != '*' && grid[i].color == color) {
-            temp_moves = this->array_of_possible(i);
-            for (int j = 0; j < temp_moves.size(); j++) {
-                mov tp(i, temp_moves[j], 0);
+            all_of_possible_moves_moves = this->array_of_possible(i);
+            for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
+                mov tp(i, all_of_possible_moves_moves[j], 0);
                 tab_of_possible_moves.push_back(tp);
             }
         }
@@ -935,29 +939,29 @@ mov board::bip(bool color, int deepth) {
 
     for (int i = 0; i < 64; ++i)
         if (grid[i].emblem == 'p' && grid[i].color == color) {
-            temp_moves = stuff_with_lil_ones(color, i);
-            for (int j = 0; j < temp_moves.size(); j++) {
-                mov tp(i, temp_moves[j], 0);
+            all_of_possible_moves_moves = stuff_with_lil_ones(color, i);
+            for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
+                mov tp(i, all_of_possible_moves_moves[j], 0);
                 tab_of_possible_moves.push_back(tp);
             }
         }
 
     int casle = tab_of_possible_moves.size();
 
-    temp_moves = castle(color);
-    for (int j = 0; j < temp_moves.size(); j++) {
+    all_of_possible_moves_moves = castle(color);
+    for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
         mov tp(j, j, 0);
         tab_of_possible_moves.push_back(tp);
 
     }
 
-    piece temp[2]; // it's just to hold value
+    piece all_of_possible_moves[2]; // it's just to hold value
 
 
 
     for (int i = 0; i < lil; i++) {
-        temp[0] = grid[tab_of_possible_moves[i].pos];
-        temp[1] = grid[tab_of_possible_moves[i].g_t];
+        all_of_possible_moves[0] = grid[tab_of_possible_moves[i].pos];
+        all_of_possible_moves[1] = grid[tab_of_possible_moves[i].g_t];
 
         grid[tab_of_possible_moves[i].g_t] = grid[tab_of_possible_moves[i].pos];
 
@@ -967,9 +971,9 @@ mov board::bip(bool color, int deepth) {
 
         tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
 
-        grid[tab_of_possible_moves[i].g_t] = temp[1];
+        grid[tab_of_possible_moves[i].g_t] = all_of_possible_moves[1];
 
-        grid[tab_of_possible_moves[i].pos] = temp[0];
+        grid[tab_of_possible_moves[i].pos] = all_of_possible_moves[0];
     }
 
 
@@ -977,28 +981,28 @@ mov board::bip(bool color, int deepth) {
         switch (tab_of_possible_moves[i].g_t) {
             case 100:
 
-                temp[0] = grid[tab_of_possible_moves[i].g_t]; //i+1
-                temp[1] = grid[tab_of_possible_moves[i].pos];
+                all_of_possible_moves[0] = grid[tab_of_possible_moves[i].g_t]; //i+1
+                all_of_possible_moves[1] = grid[tab_of_possible_moves[i].pos];
 
                 grid[tab_of_possible_moves[i].g_t] = new piece('n', color, true);
                 grid[tab_of_possible_moves[i].pos].emblem = '*';
 
                 tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
 
-                grid[tab_of_possible_moves[i].g_t] = temp[0];
-                grid[tab_of_possible_moves[i].pos] = temp[1];
+                grid[tab_of_possible_moves[i].g_t] = all_of_possible_moves[0];
+                grid[tab_of_possible_moves[i].pos] = all_of_possible_moves[1];
                 break;
             case 101:
-                temp[0] = grid[tab_of_possible_moves[i].g_t];
-                temp[1] = grid[tab_of_possible_moves[i].pos];
+                all_of_possible_moves[0] = grid[tab_of_possible_moves[i].g_t];
+                all_of_possible_moves[1] = grid[tab_of_possible_moves[i].pos];
 
                 grid[tab_of_possible_moves[i].g_t] = new piece('q', color, true);
                 grid[tab_of_possible_moves[i].pos].emblem = '*';
 
                 tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
 
-                grid[tab_of_possible_moves[i].g_t] = temp[0];
-                grid[tab_of_possible_moves[i].pos] = temp[1];
+                grid[tab_of_possible_moves[i].g_t] = all_of_possible_moves[0];
+                grid[tab_of_possible_moves[i].pos] = all_of_possible_moves[1];
                 break;
             case 66:
                 if (color) {
@@ -1056,8 +1060,8 @@ mov board::bip(bool color, int deepth) {
                 int shift_in_x = -8;
                 if (color) shift_in_x = 8;
 
-                temp[0] = grid[tab_of_possible_moves[i].g_t + shift_in_x];
-                temp[1] = grid[tab_of_possible_moves[i].pos];
+                all_of_possible_moves[0] = grid[tab_of_possible_moves[i].g_t + shift_in_x];
+                all_of_possible_moves[1] = grid[tab_of_possible_moves[i].pos];
 
                 grid[tab_of_possible_moves[i].g_t] = grid[i];
                 grid[tab_of_possible_moves[i].g_t].is_moved = true;
@@ -1067,9 +1071,9 @@ mov board::bip(bool color, int deepth) {
 
                 tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
 
-                grid[tab_of_possible_moves[i].g_t + shift_in_x] = temp[0];
+                grid[tab_of_possible_moves[i].g_t + shift_in_x] = all_of_possible_moves[0];
                 grid[tab_of_possible_moves[i].g_t].emblem = '*';
-                grid[tab_of_possible_moves[i].pos] = temp[1];
+                grid[tab_of_possible_moves[i].pos] = all_of_possible_moves[1];
                 break;
         }
     }
@@ -1094,9 +1098,9 @@ void board::cvc(int deep) {
 
     bool color = false;
     int sum = 0;
-    std::string temp = "WHITE\tblack\n";
-    if (list_of_moves.empty())list_of_moves.push_back(temp);
-    std::vector<int> temp_moves;
+    std::string all_of_possible_moves = "WHITE\tblack\n";
+    if (list_of_moves.empty())list_of_moves.push_back(all_of_possible_moves);
+    std::vector<int> all_of_possible_moves_moves;
     std::vector<mov> tab_of_possible_moves;
 
     while (1 < 2) {
@@ -1144,15 +1148,15 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
             //  break;
     }
 
-    array temp_moves;
+    array all_of_possible_moves_moves;
     dynamic_arr<mov> array_of_moves;
     //todo minmax jest pojebany i ty go źle napisałeś bo jesteś głupi
 
     for (int i = 0; i < 64; ++i) {
         if (grid[i].emblem != '*' && grid[i].color == color_now) {
-            temp_moves = this->array_of_possible(i);
-            for (int j = 0; j < temp_moves.size(); j++) {
-                mov tp(i, temp_moves[j], 0);
+            all_of_possible_moves_moves = this->array_of_possible(i);
+            for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
+                mov tp(i, all_of_possible_moves_moves[j], 0);
                 array_of_moves.push_back(tp);
             }
         }
@@ -1162,16 +1166,16 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
 
     for (int i = 0; i < 64; ++i)
         if (grid[i].emblem == 'p' && grid[i].color == color_now) {
-            temp_moves = stuff_with_lil_ones(color_now, i);
-            for (int j = 0; j < temp_moves.size(); j++) {
-                mov tp(i, temp_moves[j], 0);
+            all_of_possible_moves_moves = stuff_with_lil_ones(color_now, i);
+            for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
+                mov tp(i, all_of_possible_moves_moves[j], 0);
                 array_of_moves.push_back(tp);
             }
         }
 
     int casle = array_of_moves.size();
-    temp_moves = castle(color_now);
-    for (int j = 0; j < temp_moves.size(); j++) {
+    all_of_possible_moves_moves = castle(color_now);
+    for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
         mov tp(j, j, 0);
         array_of_moves.push_back(tp);
 
@@ -1183,7 +1187,7 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
         if (this->check(oposite_king_position)) return 100000 * color_dependence;
         return 0;
     }
-    piece temp[2];
+    piece all_of_possible_moves[2];
     double min_or_max;
     min_or_max = 1000006999 * -color_dependence;
 
@@ -1196,8 +1200,8 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
 
             //if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
 
-            temp[0] = grid[array_of_moves[i].g_t];
-            temp[1] = grid[array_of_moves[i].pos];
+            all_of_possible_moves[0] = grid[array_of_moves[i].g_t];
+            all_of_possible_moves[1] = grid[array_of_moves[i].pos];
 
             grid[array_of_moves[i].g_t] = grid[array_of_moves[i].pos];
 
@@ -1209,9 +1213,9 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
 
             if (min_max > min_or_max) min_or_max = min_max;
 
-            grid[array_of_moves[i].g_t] = temp[0];
+            grid[array_of_moves[i].g_t] = all_of_possible_moves[0];
 
-            grid[array_of_moves[i].pos] = temp[1];
+            grid[array_of_moves[i].pos] = all_of_possible_moves[1];
             if (min_max > 200) return 1000000;
         }
 
@@ -1219,8 +1223,8 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
             switch (array_of_moves[i].g_t) {
                 case 100:
                     //      if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
-                    temp[0] = grid[array_of_moves[i].g_t]; //i+1
-                    temp[1] = grid[array_of_moves[i].pos];
+                    all_of_possible_moves[0] = grid[array_of_moves[i].g_t]; //i+1
+                    all_of_possible_moves[1] = grid[array_of_moves[i].pos];
 
                     grid[array_of_moves[i].g_t] = new piece('n', color_now, true);
                     grid[array_of_moves[i].pos].emblem = '*';
@@ -1228,14 +1232,14 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
                     min_max = minmax(deep - 1, color_to_start, !color_now);
                     if (min_max > min_or_max) min_or_max = min_max;
 
-                    grid[array_of_moves[i].g_t] = temp[0];
-                    grid[array_of_moves[i].pos] = temp[1];
+                    grid[array_of_moves[i].g_t] = all_of_possible_moves[0];
+                    grid[array_of_moves[i].pos] = all_of_possible_moves[1];
                     if (min_max > 200) return 1000000;
                     break;
                 case 101:
                     //    if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
-                    temp[0] = grid[array_of_moves[i].g_t];
-                    temp[1] = grid[array_of_moves[i].pos];
+                    all_of_possible_moves[0] = grid[array_of_moves[i].g_t];
+                    all_of_possible_moves[1] = grid[array_of_moves[i].pos];
 
                     grid[array_of_moves[i].g_t] = new piece('q', color_now, true);
                     grid[array_of_moves[i].pos].emblem = '*';
@@ -1243,8 +1247,8 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
                     min_max = minmax(deep - 1, color_to_start, !color_now);
                     if (min_max > min_or_max) min_or_max = min_max;
 
-                    grid[array_of_moves[i].g_t] = temp[0];
-                    grid[array_of_moves[i].pos] = temp[1];
+                    grid[array_of_moves[i].g_t] = all_of_possible_moves[0];
+                    grid[array_of_moves[i].pos] = all_of_possible_moves[1];
                     if (min_max > 200) return 1000000;
                     break;
                 case 66:
@@ -1318,8 +1322,8 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
                     int osem = -8;
                     if (color_now) osem = 8;
 
-                    temp[0] = grid[array_of_moves[i].g_t + osem];
-                    temp[1] = grid[array_of_moves[i].pos];
+                    all_of_possible_moves[0] = grid[array_of_moves[i].g_t + osem];
+                    all_of_possible_moves[1] = grid[array_of_moves[i].pos];
 
                     grid[array_of_moves[i].g_t] = grid[i];
                     grid[array_of_moves[i].g_t].is_moved = true;
@@ -1332,9 +1336,9 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
                     if (min_max > min_or_max) min_or_max = min_max;
 
 
-                    grid[array_of_moves[i].g_t + osem] = temp[0];
+                    grid[array_of_moves[i].g_t + osem] = all_of_possible_moves[0];
                     grid[array_of_moves[i].g_t].emblem = '*';
-                    grid[array_of_moves[i].pos] = temp[1];
+                    grid[array_of_moves[i].pos] = all_of_possible_moves[1];
                     if (min_max > 200) return 1000000;
                     break;
             }
@@ -1344,8 +1348,8 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
     } else {
         for (int i = 0; i < lil; i++) {
             //if(grid[array_of_moves[i].g_t].emblem == 'k') return -1000;
-            temp[0] = grid[array_of_moves[i].g_t];
-            temp[1] = grid[array_of_moves[i].pos];
+            all_of_possible_moves[0] = grid[array_of_moves[i].g_t];
+            all_of_possible_moves[1] = grid[array_of_moves[i].pos];
 
             grid[array_of_moves[i].g_t] = grid[array_of_moves[i].pos];
 
@@ -1358,9 +1362,9 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
             if (min_max < min_or_max) min_or_max = min_max;
 
 
-            grid[array_of_moves[i].g_t] = temp[0];
+            grid[array_of_moves[i].g_t] = all_of_possible_moves[0];
 
-            grid[array_of_moves[i].pos] = temp[1];
+            grid[array_of_moves[i].pos] = all_of_possible_moves[1];
             if (min_max < -200) return -1000000;
         }
 
@@ -1368,8 +1372,8 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
             switch (array_of_moves[i].g_t) {
                 case 100:
                     //      if(grid[array_of_moves[i].g_t].emblem == 'k') return -1000;
-                    temp[0] = grid[array_of_moves[i].g_t]; //i+1
-                    temp[1] = grid[array_of_moves[i].pos];
+                    all_of_possible_moves[0] = grid[array_of_moves[i].g_t]; //i+1
+                    all_of_possible_moves[1] = grid[array_of_moves[i].pos];
 
                     grid[array_of_moves[i].g_t] = new piece('n', color_now, true);
                     grid[array_of_moves[i].pos].emblem = '*';
@@ -1379,14 +1383,14 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
                     if (min_max < min_or_max) min_or_max = min_max;
 
 
-                    grid[array_of_moves[i].g_t] = temp[0];
-                    grid[array_of_moves[i].pos] = temp[1];
+                    grid[array_of_moves[i].g_t] = all_of_possible_moves[0];
+                    grid[array_of_moves[i].pos] = all_of_possible_moves[1];
                     if (min_max < -200) return -1000000;
                     break;
                 case 101:
                     //    if(grid[array_of_moves[i].g_t].emblem == 'k') return -1000;
-                    temp[0] = grid[array_of_moves[i].g_t];
-                    temp[1] = grid[array_of_moves[i].pos];
+                    all_of_possible_moves[0] = grid[array_of_moves[i].g_t];
+                    all_of_possible_moves[1] = grid[array_of_moves[i].pos];
 
                     grid[array_of_moves[i].g_t] = new piece('q', color_now, true);
                     grid[array_of_moves[i].pos].emblem = '*';
@@ -1396,8 +1400,8 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
                     if (min_max < min_or_max) min_or_max = min_max;
 
 
-                    grid[array_of_moves[i].g_t] = temp[0];
-                    grid[array_of_moves[i].pos] = temp[1];
+                    grid[array_of_moves[i].g_t] = all_of_possible_moves[0];
+                    grid[array_of_moves[i].pos] = all_of_possible_moves[1];
                     if (min_max < -200) return -1000000;
                     break;
                 case 66:
@@ -1463,8 +1467,8 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
                     int osem = -8;
                     if (color_now) osem = 8;
 
-                    temp[0] = grid[array_of_moves[i].g_t + osem];
-                    temp[1] = grid[array_of_moves[i].pos];
+                    all_of_possible_moves[0] = grid[array_of_moves[i].g_t + osem];
+                    all_of_possible_moves[1] = grid[array_of_moves[i].pos];
 
                     grid[array_of_moves[i].g_t] = grid[i];
                     grid[array_of_moves[i].g_t].is_moved = true;
@@ -1475,9 +1479,9 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
                     min_max = minmax(deep - 1, color_to_start, !color_now);
                     if (min_max < min_or_max) min_or_max = min_max;
 
-                    grid[array_of_moves[i].g_t + osem] = temp[0];
+                    grid[array_of_moves[i].g_t + osem] = all_of_possible_moves[0];
                     grid[array_of_moves[i].g_t].emblem = '*';
-                    grid[array_of_moves[i].pos] = temp[1];
+                    grid[array_of_moves[i].pos] = all_of_possible_moves[1];
                     if (min_max < -200) return -1000000;
                     break;
             }
@@ -1495,9 +1499,9 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
     // u've got a boyfriend i bet he never kiss ya?
 }
 
-void board::admin_l(std::string temp) {
+void board::admin_l(std::string all_of_possible_moves) {
     std::ifstream myfile;
-    myfile.open(temp, std::ios::in);
+    myfile.open(all_of_possible_moves, std::ios::in);
     if (myfile.good()) {
         char a;
         for (int i = 0; i < 64; ++i) {
@@ -1613,6 +1617,8 @@ array board::upgrade(bool color, int position) {
 }
 
 array board::en_passant(bool color, int position) {
+// 72+
+
     array possible_moves;
     switch (position / 8) {
         case 3:
@@ -1739,56 +1745,55 @@ array board::stuff_with_lil_ones(bool color, int position) {
     return possible_moves;
 }
 
-array board::array_of_possible(int position) {
-#if 0
-    array temp;
-    if (grid[position].emblem == '*') {
-        printf("error, it's not a pown \n");
-        return temp;
-    }
+array board::array_of_possible(int position ) {
+#if 1
+
     int px = position / 8, py = position % 8;
 
-/*
-    temp = grid[position].pin(position, grid);
 
+    char emblem = grid[position].emblem;
 
-    if (!temp.empty()) {
-        if (temp[0] == -1) temp.clear();
-        return temp;
+    bool color = grid[position].color;
+
+    bool is_moved = grid[position].is_moved;
+
+    array all_of_possible_moves;
+    if (emblem == '*') {
+        printf("error, it's not a pown \n");
+        return all_of_possible_moves;
     }
-*/
 
-    switch (this->emblem) {
+
+    switch (emblem) {
         case 'p':
 
             if (color) {   // czarne czyli \/
 
                 if (grid[position + 8].emblem == '*') {
-                    temp.push_back(position + 8);
-                    if (!is_moved && grid[position + 16].emblem == '*') temp.push_back(position + 16);
+                    all_of_possible_moves.push_back(position + 8);
+                    if (!is_moved && grid[position + 16].emblem == '*') all_of_possible_moves.push_back(position + 16);
 
                 }
 
                 if (py != 7 && grid[position + 9].emblem != '*' && grid[position + 9].color == !color)
-                    temp.push_back(position + 9);
+                    all_of_possible_moves.push_back(position + 9);
                 if (py != 0 && grid[position + 7].emblem != '*' && grid[position + 7].color == !color)
-                    temp.push_back(position + 7);
-
+                    all_of_possible_moves.push_back(position + 7);
 
 
                 break;
             } else {
 
                 if (grid[position - 8].emblem == '*') {
-                    temp.push_back(position - 8);
+                    all_of_possible_moves.push_back(position - 8);
                     if (!is_moved && grid[position - 16].emblem == '*')
-                        temp.push_back(position - 16);
+                        all_of_possible_moves.push_back(position - 16);
                 }
 
                 if (py != 0 && grid[position - 9].emblem != '*' && grid[position - 9].color == !color)
-                    temp.push_back(position - 9);
+                    all_of_possible_moves.push_back(position - 9);
                 if (py != 7 && grid[position - 7].emblem != '*' && grid[position - 7].color == !color)
-                    temp.push_back(position - 7);
+                    all_of_possible_moves.push_back(position - 7);
 
             }
 
@@ -1796,119 +1801,121 @@ array board::array_of_possible(int position) {
 
         case 'n': {
 
-            temp[0] = position - 15;
-            temp[1] = position - 17;
-            temp[2] = position - 6;
-            temp[3] = position - 10;
-            temp[4] = position + 15;
-            temp[5] = position + 17;
-            temp[6] = position + 6;
-            temp[7] = position + 10;
-            temp.size(8);
+            all_of_possible_moves[0] = position - 15;
+            all_of_possible_moves[1] = position - 17;
+            all_of_possible_moves[2] = position - 6;
+            all_of_possible_moves[3] = position - 10;
+            all_of_possible_moves[4] = position + 15;
+            all_of_possible_moves[5] = position + 17;
+            all_of_possible_moves[6] = position + 6;
+            all_of_possible_moves[7] = position + 10;
+            all_of_possible_moves.size(8);
 
 
             switch (py) {
                 case 0:
-                    temp[1] = -101;
-                    temp[3] = -101;
-                    temp[4] = -101;
-                    temp[6] = -101;
-                    temp.rejects(4);
+                    all_of_possible_moves[1] = -101;
+                    all_of_possible_moves[3] = -101;
+                    all_of_possible_moves[4] = -101;
+                    all_of_possible_moves[6] = -101;
+                    all_of_possible_moves.rejects(4);
                     break;
                 case 1:
 
-                    temp[3] = -101;
-                    temp[6] = -101;
-                    temp.rejects(2);
+                    all_of_possible_moves[3] = -101;
+                    all_of_possible_moves[6] = -101;
+                    all_of_possible_moves.rejects(2);
 
                     break;
                 case 6:
 
-                    temp[2] = -101;
-                    temp[7] = -101;
+                    all_of_possible_moves[2] = -101;
+                    all_of_possible_moves[7] = -101;
 
-                    temp.rejects(2);
+                    all_of_possible_moves.rejects(2);
 
                     break;
                 case 7:
 
-                    temp[0] = -101;
-                    temp[2] = -101;
-                    temp[5] = -101;
-                    temp[7] = -101;
-                    temp.rejects(4);
+                    all_of_possible_moves[0] = -101;
+                    all_of_possible_moves[2] = -101;
+                    all_of_possible_moves[5] = -101;
+                    all_of_possible_moves[7] = -101;
+                    all_of_possible_moves.rejects(4);
 
                     break;
                 default:
                     break;
             }
 
-            temp.clr();
+            all_of_possible_moves.clr();
 
             switch (px) {
                 case 0:
-                    temp.erase(0, 4);
+                    all_of_possible_moves.erase(0, 4);
 
                     break;
                 case 1:
-                    temp.erase(0, 2);
+                    all_of_possible_moves.erase(0, 2);
 
                     break;
                 case 6:
 
-                    temp.erase(4, 6);
+                    all_of_possible_moves.erase(4, 6);
 
 
                     break;
                 case 7:
-                    temp.erase(4, 8);
+                    all_of_possible_moves.erase(4, 8);
 
                     break;
                 default:
                     break;
             }
 
-            temp.clr();
+            all_of_possible_moves.clr();
 
-            for (int i = 0; i < temp.size(); i++) {
-                if (grid[temp[i]].emblem != '*' && grid[temp[i]].color == color) temp.erase(i);
+            for (int i = 0; i < all_of_possible_moves.size(); i++) {
+                if (grid[all_of_possible_moves[i]].emblem != '*' &&
+                    grid[all_of_possible_moves[i]].color == color)
+                    all_of_possible_moves.erase(i);
             }
 
-            temp.clr();
+            all_of_possible_moves.clr();
 
-            for (int i = 0; i < temp.size(); i++) {
-                if (grid[position].check(temp[i], grid)) temp.erase(i);
+            for (int i = 0; i < all_of_possible_moves.size(); i++) {
+                if (this->check(all_of_possible_moves[i])) all_of_possible_moves.erase(i);
             }
         }
             break;
         case 'k':
 
-            temp[0] = position - 7;
-            temp[1] = position - 8;
-            temp[2] = position - 9;
-            temp[3] = position - 1;
-            temp[4] = position + 1;
-            temp[5] = position + 7;
-            temp[6] = position + 8;
-            temp[7] = position + 9;
-            temp.size(8);
+            all_of_possible_moves[0] = position - 7;
+            all_of_possible_moves[1] = position - 8;
+            all_of_possible_moves[2] = position - 9;
+            all_of_possible_moves[3] = position - 1;
+            all_of_possible_moves[4] = position + 1;
+            all_of_possible_moves[5] = position + 7;
+            all_of_possible_moves[6] = position + 8;
+            all_of_possible_moves[7] = position + 9;
+            all_of_possible_moves.size(8);
 
 
             switch (px) {
                 case 0:
 
-                    temp[0] = -101;
-                    temp[1] = -101;
-                    temp[2] = -101;
-                    temp.rejects(3);
+                    all_of_possible_moves[0] = -101;
+                    all_of_possible_moves[1] = -101;
+                    all_of_possible_moves[2] = -101;
+                    all_of_possible_moves.rejects(3);
 
                     break;
                 case 7:
 
-                    temp[5] = -101;
-                    temp[6] = -101;
-                    temp[7] = -101;
-                    temp.rejects(3);
+                    all_of_possible_moves[5] = -101;
+                    all_of_possible_moves[6] = -101;
+                    all_of_possible_moves[7] = -101;
+                    all_of_possible_moves.rejects(3);
 
                     break;
                 default:
@@ -1916,29 +1923,31 @@ array board::array_of_possible(int position) {
             }
             switch (py) {
                 case 0:
-                    temp.erase(2);
-                    temp.erase(5);
-                    temp.erase(3);
+                    all_of_possible_moves.erase(2);
+                    all_of_possible_moves.erase(5);
+                    all_of_possible_moves.erase(3);
 
                     break;
                 case 7:
-                    temp.erase(4);
-                    temp.erase(0);
-                    temp.erase(7);
+                    all_of_possible_moves.erase(4);
+                    all_of_possible_moves.erase(0);
+                    all_of_possible_moves.erase(7);
                     break;
                 default:
                     break;
             }
 
-            temp.clr();
+            all_of_possible_moves.clr();
 
-            for (int i = 0; i < temp.size(); i++)
-                if (grid[temp[i]].emblem != '*' && grid[temp[i]].color == color)temp.erase(i);
+            for (int i = 0; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*' &&
+                    grid[all_of_possible_moves[i]].color == color)
+                    all_of_possible_moves.erase(i);
 
-            temp.clr();
+            all_of_possible_moves.clr();
 
-            for (int i = 0; i < temp.size(); i++)
-                if (grid[position].check(temp[i], grid))temp.erase(i);
+            for (int i = 0; i < all_of_possible_moves.size(); i++)
+                if (this->check(all_of_possible_moves[i]))all_of_possible_moves.erase(i);
 
 
             break;
@@ -1946,555 +1955,176 @@ array board::array_of_possible(int position) {
             int temp_x = px, temp_y = py;
             int i = 0;
 
-            while (temp_x > 0 && 7 > temp_y)temp.push_back((--temp_x) * 8 + ++temp_y);
+            while (temp_x > 0 && 7 > temp_y)
+                all_of_possible_moves.push_back((--temp_x) * 8 + ++temp_y);
 
             temp_x = px;
             temp_y = py;
 
-            for (; i < temp.
-
-                    size();
-
-                   i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.erase(i, temp.size());
-                    else
-                        temp.
-                                erase(i
-                                      + 1, temp.
-
-                                size()
-
-                        );
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
+                    else all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
-
                 }
-
-
-            i = temp.size();
-
-            while (
-                    temp_x < 7 && 7 > temp_y
-                    )
-                temp.push_back((++temp_x) * 8 + ++temp_y);
-
+            i = all_of_possible_moves.size();
+            while (temp_x < 7 && 7 > temp_y)
+                all_of_possible_moves.push_back((++temp_x) * 8 + ++temp_y);
             temp_x = px;
             temp_y = py;
-
-            for (; i < temp.
-
-                    size();
-
-                   i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.
-                                erase(i, temp
-                                .
-
-                                        size()
-
-                        );
-                    else
-                        temp.
-                                erase(i
-                                      + 1, temp.
-
-                                size()
-
-                        );
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
+                    else all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
-
-                }
-
-//y
-            i = temp.size();
-            while (temp_x < 7 && 0 < temp_y) temp.push_back((++temp_x) * 8 + --temp_y);
-
-
+                }//y
+            i = all_of_possible_moves.size();
+            while (temp_x < 7 && 0 < temp_y)
+                all_of_possible_moves.push_back((++temp_x) * 8 + --temp_y);
             temp_x = px;
             temp_y = py;
-            for (; i < temp.
-
-                    size();
-
-                   i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.
-                                erase(i, temp
-                                .
-
-                                        size()
-
-                        );
-                    else
-                        temp.
-                                erase(i
-                                      + 1, temp.
-
-                                size()
-
-                        );
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
+                    else all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
-
                 }
-
-
-            i = temp.size();
-            while (temp_x > 0 && 0 < temp_y) temp.push_back((--temp_x) * 8 + --temp_y);
-
-
-            for (; i < temp.
-
-                    size();
-
-                   i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.
-                                erase(i, temp
-                                .
-
-                                        size()
-
-                        );
-                    else
-                        temp.
-                                erase(i
-                                      + 1, temp.
-
-                                size()
-
-                        );
+            i = all_of_possible_moves.size();
+            while (temp_x > 0 && 0 < temp_y)
+                all_of_possible_moves.push_back((--temp_x) * 8 + --temp_y);
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
+                    else all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
-
-                }
-
-
-//r
-            i = temp.size();
-            for (
-                    int z = 1;
-                    z <=
-                    px;
-                    z++)
-                temp.
-                        push_back(position
-                                  - (z * 8));
-
-
-            for (; i < temp.
-
-                    size();
-
-                   i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.
-                                erase(i, temp
-                                .
-
-                                        size()
-
-                        );
-                    else
-                        temp.
-                                erase(i
-                                      + 1, temp.
-
-                                size()
-
-                        );
+                }//r
+            i = all_of_possible_moves.size();
+            for (int z = 1; z <= px; z++)all_of_possible_moves.push_back(position - (z * 8));
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
+                    else all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
-
                 }
-
-
-            i = temp.size();
-
-            for (
-                    int z = 1;
-                    z < 8 -
-                        px;
-                    z++)
-                temp.
-                        push_back(position
-                                  + (z * 8));
-
-
-            for (; i < temp.
-
-                    size();
-
-                   i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.
-                                erase(i, temp
-                                .
-
-                                        size()
-
-                        );
-                    else
-                        temp.
-                                erase(i
-                                      + 1, temp.
-
-                                size()
-
-                        );
+            i = all_of_possible_moves.size();
+            for (int z = 1; z < 8 - px; z++)all_of_possible_moves.push_back(position + (z * 8));
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
+                    else all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
-
-                }
-
-//y
-            i = temp.size();
-
-            for (
-                    int z = 1;
-                    z <=
-                    py;
-                    z++)
-                temp.
-                        push_back(position
-                                  - z);
+                }//y
 
 
-            for (; i < temp.
+            i = all_of_possible_moves.size();
 
-                    size();
-
-                   i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.
-                                erase(i, temp
-                                .
-
-                                        size()
-
-                        );
-                    else
-                        temp.
-                                erase(i
-                                      + 1, temp.
-
-                                size()
-
-                        );
+            for (int z = 1; z <= py; z++)all_of_possible_moves.push_back(position - z);
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
+                    else all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
-
                 }
-
-
-            i = temp.size();
-
-            for (
-                    int z = 1;
-                    z < 8 -
-                        py;
-                    z++)
-                temp.
-                        push_back(position
-                                  + z);
-
-
-            for (; i < temp.
-
-                    size();
-
-                   i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.
-                                erase(i, temp
-                                .
-
-                                        size()
-
-                        );
-                    else
-                        temp.
-                                erase(i
-                                      + 1, temp.
-
-                                size()
-
-                        );
+            i = all_of_possible_moves.size();
+            for (int z = 1; z < 8 - py; z++)all_of_possible_moves.push_back(position + z);
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
+                    else all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
-
                 }
-
-
         }
             break;
-        case 'b': {
-// x
+        case 'b': {// x
             int temp_x = px, temp_y = py;
             int i = 0;
-
-            while (temp_x > 0 && 7 > temp_y)temp.push_back((--temp_x) * 8 + ++temp_y);
-
-
+            while (temp_x > 0 && 7 > temp_y)all_of_possible_moves.push_back((--temp_x) * 8 + ++temp_y);
             temp_x = px;
             temp_y = py;
-
-            for (; i < temp.
-
-                    size();
-
-                   i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.erase(i, temp.size());
-                    else
-                        temp.erase(i+ 1, temp.size());
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
+                    else all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
-
                 }
-
-            i = temp.size();
-
-            while (temp_x < 7 && 7 > temp_y)
-                temp.push_back((++temp_x) * 8 + ++temp_y);
-
+            i = all_of_possible_moves.size();
+            while (temp_x < 7 && 7 > temp_y)all_of_possible_moves.push_back((++temp_x) * 8 + ++temp_y);
             temp_x = px;
             temp_y = py;
-
-            for (; i < temp.size();i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.erase(i, temp.size()
-
-                        );
-                    else
-                        temp.
-                                erase(i
-                                      + 1, temp.
-
-                                size()
-
-                        );
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
+                    else all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
-
-                }
-
-//y
-            i = temp.size();
-            while (temp_x < 7 && 0 < temp_y) temp.push_back((++temp_x) * 8 + --temp_y);
-
-
+                }//y
+            i = all_of_possible_moves.size();
+            while (temp_x < 7 && 0 < temp_y)all_of_possible_moves.push_back((++temp_x) * 8 + --temp_y);
             temp_x = px;
             temp_y = py;
-            for (; i < temp.
-
-                    size();
-
-                   i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.
-                                erase(i, temp
-                                .
-
-                                        size()
-
-                        );
-                    else
-                        temp.
-                                erase(i
-                                      + 1, temp.
-
-                                size()
-
-                        );
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
+                    else all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
-
                 }
-
-
-            i = temp.size();
-            while (temp_x > 0 && 0 < temp_y) temp.push_back((--temp_x) * 8 + --temp_y);
-
-
-            for (; i < temp.
-
-                    size();
-
-                   i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.
-                                erase(i, temp.size()
-
-                        );
-                    else
-                        temp.erase(i + 1, temp.size()
-
-                        );
+            i = all_of_possible_moves.size();
+            while (temp_x > 0 && 0 < temp_y)all_of_possible_moves.push_back((--temp_x) * 8 + --temp_y);
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
+                    else all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
-
                 }
-
         }
             break;
         case 'r': {
-
-
-            int i = 0;
-//x
-            for (
-                    int z = 1;
-                    z <=
-                    px;
-                    z++)
-                temp.
-                        push_back(position
-                                  - (z * 8));
-
-
-            for (; i < temp.
-
-                    size();
-
-                   i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.
-                                erase(i, temp
-                                .
-
-                                        size()
-
-                        );
-                    else
-                        temp.
-                                erase(i
-                                      + 1, temp.
-
-                                size()
-
-                        );
+            int i = 0;//x
+            for (int z = 1; z <= px; z++)all_of_possible_moves.push_back(position - (z * 8));
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
+                    else all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
-
                 }
-
-
-            i = temp.size();
-
-            for (
-                    int z = 1;
-                    z < 8 -
-                        px;
-                    z++)
-                temp.
-                        push_back(position
-                                  + (z * 8));
-
-
-            for (; i < temp.
-
-                    size();
-
-                   i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.
-                                erase(i, temp
-                                .
-
-                                        size()
-
-                        );
-                    else
-                        temp.
-                                erase(i
-                                      + 1, temp.
-
-                                size()
-
-                        );
+            i = all_of_possible_moves.size();
+            for (int z = 1; z < 8 - px; z++)all_of_possible_moves.push_back(position + (z * 8));
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
+                    else all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
-
-                }
-
-//y
-            i = temp.size();
-
-            for (
-                    int z = 1;
-                    z <=
-                    py;
-                    z++)
-                temp.
-                        push_back(position
-                                  - z);
-
-
-            for (; i < temp.
-
-                    size();
-
-                   i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.
-                                erase(i, temp
-                                .
-
-                                        size()
-
-                        );
-                    else
-                        temp.
-                                erase(i
-                                      + 1, temp.
-
-                                size()
-
-                        );
+                }//y
+            i = all_of_possible_moves.size();
+            for (int z = 1; z <= py; z++)all_of_possible_moves.push_back(position - z);
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
+                    else all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
-
                 }
-
-
-            i = temp.size();
-
-            for (
-                    int z = 1;
-                    z < 8 -
-                        py;
-                    z++)
-                temp.
-                        push_back(position
-                                  + z);
-
-
-            for (; i < temp.
-
-                    size();
-
-                   i++)
-                if (grid[temp[i]].emblem != '*') {
-                    if (grid[temp[i]].color == color)
-                        temp.
-                                erase(i, temp
-                                .
-
-                                        size()
-
-                        );
+            i = all_of_possible_moves.size();
+            for (int z = 1; z < 8 - py; z++)all_of_possible_moves.push_back(position + z);
+            for (; i < all_of_possible_moves.size(); i++)
+                if (grid[all_of_possible_moves[i]].emblem != '*') {
+                    if (grid[all_of_possible_moves[i]].color == color)
+                        all_of_possible_moves.erase(i, all_of_possible_moves.size());
                     else
-                        temp.
-                                erase(i
-                                      + 1, temp.
-
-                                size()
-
-                        );
+                        all_of_possible_moves.erase(i + 1, all_of_possible_moves.size());
                     break;
 
                 }
@@ -2506,12 +2136,10 @@ array board::array_of_possible(int position) {
             printf("well %d not a pon u dumbas \n", position);
             break;
     }
-    temp.
-
-            clr();
+    all_of_possible_moves.clr();
 
     return
-            temp;
+            all_of_possible_moves;
 #else
     //ok the plan is that its 3 dimentional array and 1st lavel has 64 elemants seckond has 4 and the last is whatever
 
@@ -3570,16 +3198,16 @@ int j=0;
    /// 4 horsey
 
 
-   int temp[8] = {position - 17, position - 15, position - 10, position - 6, position + 6, position + 10,
+   int all_of_possible_moves[8] = {position - 17, position - 15, position - 10, position - 6, position + 6, position + 10,
                   position + 15, position + 17};
 
    for (int i = 0; i < 8; i++) {
-       if (grid[temp[i]].emblem == 'n' && grid[temp[i]].color != color)
-           if(grid[temp[i]].possible(temp[i],grid,position,true)) return true;
+       if (grid[all_of_possible_moves[i]].emblem == 'n' && grid[all_of_possible_moves[i]].color != color)
+           if(grid[all_of_possible_moves[i]].possible(all_of_possible_moves[i],grid,position,true)) return true;
 
 
    }
-   delete[] &temp;
+   delete[] &all_of_possible_moves;
 
 /// paion
 
