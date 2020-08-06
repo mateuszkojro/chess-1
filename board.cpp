@@ -1648,9 +1648,7 @@ array board::en_passant(bool color, int position) {
 
                 if (list_of_moves.back()[i] == 'p' && hold21 - hold54 == 16) {
 
-
                     if (hold54 == position - 1 && position % 8 != 0) {
-
 
                         possible_moves.push_back(hold21 - 8);
                     }
