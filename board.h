@@ -303,7 +303,7 @@ return *this;
 
     void pvp();
 
-    void pvc();
+    void pvc(int deepth, bool player_s_color);
 
     void cvc(int deep);
 
@@ -333,14 +333,14 @@ return *this;
 
     double minmax(int deep, bool color_to_start, bool color_now);
 
-    array array_of_possible(int position);
+    void array_of_possible(int position, array &all_of_possible_moves);
 
     bool possible(int position, int go_to);
 
-
-    array pin(int position);
-
     bool check(int position);
+
+    void test(int deepth,int how_meny_geerations, std::string data_file_name);
+
 
 };
 

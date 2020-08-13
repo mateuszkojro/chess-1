@@ -97,15 +97,20 @@ public:
     }
 
     void erase(int del) {
-        tab[del] = -101;
-        rej++;
+        if (tab[del !=-101]) {
+            tab[del] = -101;
+            rej++;
+        }
     }
 
     void erase(int del, int del_to) {
 
-
-        for (int i = del; i < del_to; i++)tab[i] = -101;
-        rej += del_to - del;
+        for (int i = del; i < del_to; i++) {
+            if (tab[i] != -101) {
+                tab[i] = -101;
+                rej++;
+            }
+        }
     }
 
     bool empty() { return siz == 0; }
@@ -121,6 +126,7 @@ public:
                     if (tab[j] != -101) {
                         tab[i] = tab[j];
                         tab[j] = -101;
+
                         break;
                     }
                 }
@@ -131,7 +137,7 @@ public:
 
     void clear() {
         siz = 0;
-        //  rej =0;
+          rej =0;
         for (int &i : tab)i = -101;
 
 
@@ -178,16 +184,14 @@ public:
     }
 
 
-
     T &operator[](int pos) {
-        if(pos>siz) {
+        if (pos > siz) {
 
 
             printf("lelelele");
 
         }
         return tab[pos];
-
 
 
     }
@@ -203,8 +207,8 @@ public:
 
     void size(int siz) { this->siz = siz; }
 
-    void clear () {
-        delete []tab;
+    void clear() {
+        delete[]tab;
         this->max_siz = 80;
         this->siz = 0;
         this->tab = new T[80];
