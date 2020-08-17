@@ -13,7 +13,8 @@ int main() {
 
     board cghe;
     cghe.admin();
-    cghe.pvc(3,WHITE);
+    cghe.pvc(4,BLACK);
+
 
 
     std::cout<<">>>>>>>>>"<< compare::counter <<"<<<<<<<";

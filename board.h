@@ -319,7 +319,9 @@ return *this;
 
     array castle(bool color);
 
-    array stuff_with_lil_ones(bool color, int position);
+    double standard_move(mov suspect, bool color, int deepth);
+
+    double specjal_moves(mov suspect, bool color, int deepth);
 
     array upgrade(bool color, int position);
 
@@ -331,7 +333,7 @@ return *this;
 
     mov bip(bool color, int deepth, int number_of_threads);
 
-    double minmax(int deep, bool color_to_start, bool color_now);
+    double minmax(int deep, bool color_now, double alpha, double beta);
 
     void array_of_possible(int position, array &all_of_possible_moves);
 
@@ -339,9 +341,9 @@ return *this;
 
     bool check(int position);
 
-    void test(int deepth,int how_meny_geerations, std::string data_file_name);
+    mov first_level(bool color, int deepth, int number_of_threads = -1);
 
-
+    double seckond_level(bool color, int deepth, int number_of_threads = -1);
 };
 
 

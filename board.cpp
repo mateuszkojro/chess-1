@@ -48,6 +48,8 @@ char getch(){
 #define BLACK true
 #define WHITE false
 
+#define UNDER_CONTROLL false  //znaczy to jest na odwrót
+
 int ctn(char x, char y) {
     return ((static_cast<int>(x) - 56) * (-8)) + (static_cast<int>(y) - 97);
 }
@@ -120,9 +122,11 @@ void board::show() {
     }
 
     for (int i = 0; i < grid_background.size(); i++) {
+
         if (i == 23)printf("%c  %f\n", grid_background[i], eva);
         else if (i % 24 == 23)printf("%c \n", grid_background[i]);
         else printf("%c ", grid_background[i]);
+
     }
 
     for (int i = 0; i < list_of_moves.size(); i++) {
@@ -471,19 +475,19 @@ void board::admin() {
                 break;
             case '*': {
                 if (all_of_possible_moves.size() == 3) {
-                    bool color = static_cast<bool>(static_cast<int>(all_of_possible_moves[1]) - 48);
+                    bool players_color = static_cast<bool>(static_cast<int>(all_of_possible_moves[1]) - 48);
                     int deepth = static_cast<int>(all_of_possible_moves[2]) - 48;
-                    mov tp = bip(color, deepth);
+                    mov tp = bip(players_color, deepth);
                     printf("%c%d -> ", (char) tp.pos % 8 + 97, ((tp.pos / 8) - 8) * (-1));
                     printf("%c%d  ", (char) tp.g_t % 8 + 97, ((tp.g_t / 8) - 8) * (-1));
                     printf("%f  \a\n", tp.eva);
                     do_it = false;
                 } else {
 
-                    bool color = static_cast<bool>(static_cast<int>(all_of_possible_moves[1]) - 48);
+                    bool players_color = static_cast<bool>(static_cast<int>(all_of_possible_moves[1]) - 48);
                     int deepth = static_cast<int>(all_of_possible_moves[2]) - 48;
                     int threads = static_cast<int>(all_of_possible_moves[3]) - 48;
-                    mov tp = bip(color, deepth, threads);
+                    mov tp = bip(players_color, deepth, threads);
                     printf("%c%d -> ", (char) tp.pos % 8 + 97, ((tp.pos / 8) - 8) * (-1));
                     printf("%c%d  ", (char) tp.g_t % 8 + 97, ((tp.g_t / 8) - 8) * (-1));
                     printf("%f  \a\n", tp.eva);
@@ -790,6 +794,100 @@ void board::pvc(int deepth, bool player_s_color) {
 std::mutex array_lock;
 dynamic_arr<mov> tab_of_possible_moves_4_threads;
 
+double board::standard_move(mov suspect, bool color, int deepth) {
+
+
+    grid[suspect.g_t] = grid[suspect.pos];
+    grid[suspect.g_t].is_moved = true;
+
+    return minmax(deepth, !color, -100000, 10000);
+
+
+}
+
+double board::specjal_moves(mov suspect, bool color, int deepth) {
+    switch (suspect.g_t) {
+        case 100:
+
+
+            grid[suspect.g_t] = new piece('n', color, true);
+            grid[suspect.pos].emblem = '*';
+
+            return minmax(deepth, !color, -100000, 100000);
+        case 101:
+
+            grid[suspect.g_t] = new piece('q', color, true);
+            grid[suspect.pos].emblem = '*';
+
+            return minmax(deepth, !color, -100000, 100000);
+        case 66:
+            if (color) {
+                grid[4].emblem = '*';
+                grid[5] = new piece('r', color, true);
+                grid[6] = new piece('k', color, true);
+                grid[7].emblem = '*';
+                return minmax(deepth, !color, -100000, 100000);
+
+            } else {
+                grid[60].emblem = '*';
+                grid[61] = new piece('r', color, true);
+                grid[62] = new piece('k', color, true);
+                grid[63].emblem = '*';
+                return minmax(deepth, !color, -100000, 100000);
+
+            }
+        case 666:
+            if (color) {
+                grid[0].emblem = '*';
+                grid[1].emblem = '*';
+                grid[2] = new piece('k', color, true);
+                grid[3] = new piece('r', color, true);
+                grid[4].emblem = '*';
+                return minmax(deepth, !color, -100000, 100000);
+
+            } else {
+                grid[46].emblem = '*';
+                grid[47].emblem = '*';
+                grid[48] = new piece('k', color, true);
+                grid[49] = new piece('r', color, true);
+                grid[50].emblem = '*';
+                return minmax(deepth, !color, -100000, 100000);
+            }
+        case (72, 73, 74, 75, 76, 77, 78, 79): {
+
+            int shift_in_x = -16;
+
+            grid[suspect.g_t] = grid[suspect.pos];
+            grid[suspect.pos].emblem = '*';
+            grid[suspect.g_t + shift_in_x].emblem = '*';
+
+            return minmax(deepth, !color, -100000, 100000);
+        }
+        case (80, 81, 82, 83, 84, 85, 86, 87): {
+            int shift_in_x = 16;
+
+            grid[suspect.g_t] = grid[suspect.pos];
+
+            grid[suspect.pos].emblem = '*';
+            grid[suspect.g_t + shift_in_x].emblem = '*';
+
+            return minmax(deepth, !color, -100000, 100000);
+        }
+
+        default:
+
+            grid[suspect.g_t] = grid[suspect.pos];
+
+            grid[suspect.g_t].is_moved = true;
+
+            grid[suspect.pos].emblem = '*';
+
+            return minmax(deepth, !color, -100000, 100000);
+
+
+    }
+}
+
 double board::do_the_move(mov suspect, bool color, int deepth) {
 
     piece all_of_possible_moves[2];
@@ -802,7 +900,7 @@ double board::do_the_move(mov suspect, bool color, int deepth) {
             grid[suspect.g_t] = new piece('n', color, true);
             grid[suspect.pos].emblem = '*';
 
-            suspect.eva = this->minmax(deepth, color, !color);
+            suspect.eva = this->minmax(deepth, !color, 0, 0);
 
             grid[suspect.g_t] = all_of_possible_moves[0];
             grid[suspect.pos] = all_of_possible_moves[1];
@@ -814,7 +912,7 @@ double board::do_the_move(mov suspect, bool color, int deepth) {
             grid[suspect.g_t] = new piece('q', color, true);
             grid[suspect.pos].emblem = '*';
 
-            suspect.eva = this->minmax(deepth, color, !color);
+            suspect.eva = this->minmax(deepth, !color, 0, 0);
 
             grid[suspect.g_t] = all_of_possible_moves[0];
             grid[suspect.pos] = all_of_possible_moves[1];
@@ -825,7 +923,7 @@ double board::do_the_move(mov suspect, bool color, int deepth) {
                 grid[5] = new piece('r', color, true);
                 grid[6] = new piece('k', color, true);
                 grid[7].emblem = '*';
-                suspect.eva = this->minmax(deepth, color, !color);
+                suspect.eva = this->minmax(deepth, !color, 0, 0);
                 grid[4] = new piece('k', color, false);
                 grid[5].emblem = '*';
                 grid[6].emblem = '*';
@@ -835,7 +933,7 @@ double board::do_the_move(mov suspect, bool color, int deepth) {
                 grid[61] = new piece('r', color, true);
                 grid[62] = new piece('k', color, true);
                 grid[63].emblem = '*';
-                suspect.eva = this->minmax(deepth, color, !color);
+                suspect.eva = this->minmax(deepth, !color, 0, 0);
                 grid[60] = new piece('k', color, false);
                 grid[61].emblem = '*';
                 grid[62].emblem = '*';
@@ -850,7 +948,7 @@ double board::do_the_move(mov suspect, bool color, int deepth) {
                 grid[2] = new piece('k', color, true);
                 grid[3] = new piece('r', color, true);
                 grid[4].emblem = '*';
-                suspect.eva = this->minmax(deepth, color, !color);
+                suspect.eva = this->minmax(deepth, !color, 0, 0);
                 grid[0] = new piece('r', color, false);
                 grid[1].emblem = '*';
                 grid[2].emblem = '*';
@@ -862,7 +960,7 @@ double board::do_the_move(mov suspect, bool color, int deepth) {
                 grid[48] = new piece('k', color, true);
                 grid[49] = new piece('r', color, true);
                 grid[50].emblem = '*';
-                suspect.eva = this->minmax(deepth, color, !color);
+                suspect.eva = this->minmax(deepth, !color, 0, 0);
                 grid[46] = new piece('r', color, false);
                 grid[47].emblem = '*';
                 grid[48].emblem = '*';
@@ -870,13 +968,45 @@ double board::do_the_move(mov suspect, bool color, int deepth) {
                 grid[50] = new piece('k', color, false);
             }
             break;
-        case (72, 73, 74, 75, 76, 77, 78, 79):
+        case (72, 73, 74, 75, 76, 77, 78, 79): {
+            int shift_in_x = -16;
+            all_of_possible_moves[0] = grid[suspect.g_t + shift_in_x];
+            all_of_possible_moves[1] = grid[suspect.pos];
+
+            grid[suspect.g_t] = grid[suspect.pos];
+            //  grid[suspect.g_t].is_moved = true;
+
+            grid[suspect.pos].emblem = '*';
+            grid[suspect.g_t + shift_in_x].emblem = '*';
+
+            suspect.eva = this->minmax(deepth, !color, 0, 0);
+
+            grid[suspect.g_t + shift_in_x] = all_of_possible_moves[0];
+            grid[suspect.g_t].emblem = '*';
+            grid[suspect.pos] = all_of_possible_moves[1];
 
 
+        }
             break;
-        case (80, 81, 82, 83, 84, 85, 86, 87):
+        case (80, 81, 82, 83, 84, 85, 86, 87): {
+            int shift_in_x = 16;
+            all_of_possible_moves[0] = grid[suspect.g_t + shift_in_x];
+            all_of_possible_moves[1] = grid[suspect.pos];
+
+            grid[suspect.g_t] = grid[suspect.pos];
+            //  grid[suspect.g_t].is_moved = true;
+
+            grid[suspect.pos].emblem = '*';
+            grid[suspect.g_t + shift_in_x].emblem = '*';
+
+            suspect.eva = this->minmax(deepth, !color, 0, 0);
+
+            grid[suspect.g_t + shift_in_x] = all_of_possible_moves[0];
+            grid[suspect.g_t].emblem = '*';
+            grid[suspect.pos] = all_of_possible_moves[1];
 
 
+        }
             break;
         default:
 
@@ -889,7 +1019,7 @@ double board::do_the_move(mov suspect, bool color, int deepth) {
 
             grid[suspect.pos].emblem = '*';
 
-            suspect.eva = this->minmax(deepth, color, !color);
+            suspect.eva = this->minmax(deepth, !color, 0, 0);
 
             grid[suspect.g_t] = all_of_possible_moves[1];
 
@@ -897,15 +1027,22 @@ double board::do_the_move(mov suspect, bool color, int deepth) {
     }
     return suspect.eva;
 }
-// todo weź zrób tak żeby wątki były wywoływane po drugiej odpowiedzi a.k.a zamiast 20 będize ich 400 at start
-void hold_the_move(int start_of_suspected, bool color, int deepth, int end_of_suspected, board *frame) {
 
+// todo weź zrób tak żeby wątki były wywoływane po drugiej odpowiedzi a.k.a zamiast 20 będize ich 400 at start
+std::mutex numbr_lock;
+int numbr_of_permutations=0;
+void hold_the_move(int position_of_suspected, bool color, int deepth, board *frame) {
+#if UNDER_CONTROLL
     int inkrement = end_of_suspected - start_of_suspected;
 
     mov *suspects = new mov[inkrement];
+
     array_lock.lock();
+
     for (int i = start_of_suspected; i < end_of_suspected; i++)
+
         suspects[i - start_of_suspected] = tab_of_possible_moves_4_threads[i];
+
     array_lock.unlock();
 
     for (int i = 0; i < inkrement; i++)
@@ -916,16 +1053,32 @@ void hold_the_move(int start_of_suspected, bool color, int deepth, int end_of_su
     for (int i = start_of_suspected; i < end_of_suspected; i++)
         tab_of_possible_moves_4_threads[i].eva = suspects[i - start_of_suspected].eva;
     array_lock.unlock();
+#else
+    array_lock.lock();
+    mov suspect = tab_of_possible_moves_4_threads[position_of_suspected];
+    array_lock.unlock();
 
+    if (suspect.g_t < 64) suspect.eva = frame->standard_move(suspect, color, deepth);
+
+    else suspect.eva = frame->specjal_moves(suspect, color, deepth);
+
+    array_lock.lock();
+    tab_of_possible_moves_4_threads[position_of_suspected].eva = suspect.eva;
+
+    array_lock.unlock();
+
+
+#endif
 }
 
 mov board::bip(bool color, int deepth, int number_of_th) {
     tab_of_possible_moves_4_threads.clear();
-    auto start = std::chrono::steady_clock::now();
-    //std::vector<int> all_of_possible_moves_moves;
-    //dynamic_arr<mov> tab_of_possible_moves_4_threads;
+    numbr_of_permutations = 0;
 
+    auto start = std::chrono::steady_clock::now();
     array all_of_possible_moves_moves;
+
+
     for (int i = 0; i < 64; ++i) {
         if (grid[i].emblem != '*' && grid[i].color == color) {
             this->array_of_possible(i, all_of_possible_moves_moves);
@@ -935,61 +1088,90 @@ mov board::bip(bool color, int deepth, int number_of_th) {
             }
         }
     }
-    int casle = tab_of_possible_moves_4_threads.size();
+
+
+    int weird_stuff = tab_of_possible_moves_4_threads.size();
+
 
     all_of_possible_moves_moves = castle(color);
 
-
     for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
-        mov tp(j, j, 0);
+        mov tp(j, all_of_possible_moves_moves[j], 0);
         tab_of_possible_moves_4_threads.push_back(tp);
-
     }
 
-    int lil = tab_of_possible_moves_4_threads.size();
+    if (color) {
+        for (int i = 48; i < 56; i++) {
+            if (grid[i].emblem == 'p' && grid[i].color == color) {
 
-    for (int i = 0; i < 64; ++i)
-        if (grid[i].emblem == 'p' && grid[i].color == color) {
-            all_of_possible_moves_moves = upgrade(color, i);
-            for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
-                mov tp(i, all_of_possible_moves_moves[j], 0);
-                tab_of_possible_moves_4_threads.push_back(tp);
+                all_of_possible_moves_moves = upgrade(color, i);
+
+                for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
+                    mov tp(i, all_of_possible_moves_moves[j], 0);
+                    tab_of_possible_moves_4_threads.push_back(tp);
+                }
+
+            }
+        }
+        for (int i = 40; i < 48; i++) {
+            if (grid[i].emblem == 'p' && grid[i].color == color) {
+
+                all_of_possible_moves_moves = en_passant(color, i);
+
+                for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
+                    mov tp(i, all_of_possible_moves_moves[j], 0);
+                    tab_of_possible_moves_4_threads.push_back(tp);
+                }
+            }
+        }
+    } else {
+        for (int i = 8; i < 16; i++) {
+            if (grid[i].emblem == 'p' && grid[i].color == color) {
+
+                all_of_possible_moves_moves = upgrade(color, i);
+
+                for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
+                    mov tp(i, all_of_possible_moves_moves[j], 0);
+                    tab_of_possible_moves_4_threads.push_back(tp);
+                }
+
+            }
+        }
+        for (int i = 16; i < 32; i++) {
+            if (grid[i].emblem == 'p' && grid[i].color == color) {
+
+                all_of_possible_moves_moves = en_passant(color, i);
+
+                for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
+                    mov tp(i, all_of_possible_moves_moves[j], 0);
+                    tab_of_possible_moves_4_threads.push_back(tp);
+                }
             }
         }
 
-    for (int i = 0; i < 64; ++i)
-        if (grid[i].emblem == 'p' && grid[i].color == color) {
-            all_of_possible_moves_moves = en_passant(color, i);
-            for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
-                mov tp(i, all_of_possible_moves_moves[j], 0);
-                tab_of_possible_moves_4_threads.push_back(tp);
-            }
-        }
+
+    }
 /// stuff
+
     std::vector<std::thread> thread_vector;
 
     int thread_start = 0;
+    number_of_th = tab_of_possible_moves_4_threads.size();
 
-    int thread_end = tab_of_possible_moves_4_threads.size();// 20
-
-    int vector_spread = thread_end / number_of_th; // 20/2 = 10
-    int partial_end = thread_start + vector_spread;
-    board boards_for_threads_to_let_them_play_on_their_own[number_of_th];
+    board boards_for_threads[number_of_th];
 
     for (int i = 0; i < number_of_th; i++) {
 
         board tp(*this);
-        boards_for_threads_to_let_them_play_on_their_own[i] = tp;
+        boards_for_threads[i] = tp;
 
     }
 
     for (int i = 0; i < number_of_th; i++) {
 
-        thread_vector.emplace_back(hold_the_move, thread_start, color, deepth, partial_end,
-                                   &boards_for_threads_to_let_them_play_on_their_own[i]);
-        thread_start += vector_spread;
-        if (i == number_of_th - 1) partial_end = thread_end;
-        else partial_end += vector_spread;
+        thread_vector.emplace_back(hold_the_move, i, color, deepth,
+                                   &boards_for_threads[i]);
+
     }
     for (auto &t:thread_vector)t.join();
 
@@ -1002,7 +1184,7 @@ mov board::bip(bool color, int deepth, int number_of_th) {
     std::cout << "in " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << " seconds\n";
     std::cout << "or " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
               << " milliseconds\n";
-    printf("\a");
+    printf("number of permutations: %d,\a",numbr_of_permutations);
     if (color) {
 
         return tab_of_possible_moves_4_threads[min(tab_of_possible_moves_4_threads)];
@@ -1013,48 +1195,50 @@ mov board::bip(bool color, int deepth, int number_of_th) {
 }
 
 mov board::bip(bool color, int deepth) {
+    numbr_of_permutations=0;
     auto start = std::chrono::steady_clock::now();
-    //std::vector<int> all_of_possible_moves_moves;
+    //std::vector<int> local_possible_moves;
+    array local_possible_moves;
     dynamic_arr<mov> tab_of_possible_moves;
-    array all_of_possible_moves_moves;
     for (int i = 0; i < 64; ++i) {
         if (grid[i].emblem != '*' && grid[i].color == color) {
-            this->array_of_possible(i, all_of_possible_moves_moves);
-            for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
-                mov tp(i, all_of_possible_moves_moves[j], 0);
+            this->array_of_possible(i, local_possible_moves);
+            for (int j = 0; j < local_possible_moves.size(); j++) {
+                mov tp(i, local_possible_moves[j], 0);
                 tab_of_possible_moves.push_back(tp);
             }
         }
     }
 
-    int lil = tab_of_possible_moves.size();
+    int weird_stuff = tab_of_possible_moves.size();
+// TODO here is weitd stuff to get done
 
+    /*
     for (int i = 0; i < 64; ++i)
         if (grid[i].emblem == 'p' && grid[i].color == color) {
-            all_of_possible_moves_moves = upgrade(color, i);
-            for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
-                mov tp(i, all_of_possible_moves_moves[j], 0);
+            local_possible_moves = upgrade(color, i);
+            for (int j = 0; j < local_possible_moves.size(); j++) {
+                mov tp(i, local_possible_moves[j], 0);
                 tab_of_possible_moves.push_back(tp);
             }
         }
 
-    int casle = tab_of_possible_moves.size();
+*/
+    local_possible_moves = castle(color);
 
-    all_of_possible_moves_moves = castle(color);
-
-    for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
-        mov tp(j, j, 0);
+    for (int j = 0; j < local_possible_moves.size(); j++) {
+        mov tp(j, local_possible_moves[j], 0);
         tab_of_possible_moves.push_back(tp);
 
     }
 
-    piece all_of_possible_moves[2]; // it's just to hold value
+
+    piece temp_piece_storage[2]; // it's just to hold value
 
 
-
-    for (int i = 0; i < lil; i++) {
-        all_of_possible_moves[0] = grid[tab_of_possible_moves[i].pos];
-        all_of_possible_moves[1] = grid[tab_of_possible_moves[i].g_t];
+    for (int i = 0; i < weird_stuff; i++) {
+        temp_piece_storage[0] = grid[tab_of_possible_moves[i].pos];
+        temp_piece_storage[1] = grid[tab_of_possible_moves[i].g_t];
 
         grid[tab_of_possible_moves[i].g_t] = grid[tab_of_possible_moves[i].pos];
 
@@ -1062,40 +1246,40 @@ mov board::bip(bool color, int deepth) {
 
         grid[tab_of_possible_moves[i].pos].emblem = '*';
 
-        tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
+        tab_of_possible_moves[i].eva = this->minmax(deepth, !color, -100000, 100000);
 
-        grid[tab_of_possible_moves[i].g_t] = all_of_possible_moves[1];
+        grid[tab_of_possible_moves[i].g_t] = temp_piece_storage[1];
 
-        grid[tab_of_possible_moves[i].pos] = all_of_possible_moves[0];
+        grid[tab_of_possible_moves[i].pos] = temp_piece_storage[0];
     }
 
 
-    for (int i = lil; i < tab_of_possible_moves.size(); i++) {
+    for (int i = weird_stuff; i < tab_of_possible_moves.size(); i++) {
         switch (tab_of_possible_moves[i].g_t) {
             case 100:
 
-                all_of_possible_moves[0] = grid[tab_of_possible_moves[i].g_t]; //i+1
-                all_of_possible_moves[1] = grid[tab_of_possible_moves[i].pos];
+                temp_piece_storage[0] = grid[tab_of_possible_moves[i].g_t]; //i+1
+                temp_piece_storage[1] = grid[tab_of_possible_moves[i].pos];
 
                 grid[tab_of_possible_moves[i].g_t] = new piece('n', color, true);
                 grid[tab_of_possible_moves[i].pos].emblem = '*';
 
-                tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
+                tab_of_possible_moves[i].eva = this->minmax(deepth, !color, -100000, 100000);
 
-                grid[tab_of_possible_moves[i].g_t] = all_of_possible_moves[0];
-                grid[tab_of_possible_moves[i].pos] = all_of_possible_moves[1];
+                grid[tab_of_possible_moves[i].g_t] = temp_piece_storage[0];
+                grid[tab_of_possible_moves[i].pos] = temp_piece_storage[1];
                 break;
             case 101:
-                all_of_possible_moves[0] = grid[tab_of_possible_moves[i].g_t];
-                all_of_possible_moves[1] = grid[tab_of_possible_moves[i].pos];
+                temp_piece_storage[0] = grid[tab_of_possible_moves[i].g_t];
+                temp_piece_storage[1] = grid[tab_of_possible_moves[i].pos];
 
                 grid[tab_of_possible_moves[i].g_t] = new piece('q', color, true);
                 grid[tab_of_possible_moves[i].pos].emblem = '*';
 
-                tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
+                tab_of_possible_moves[i].eva = this->minmax(deepth, !color, -100000, 100000);
 
-                grid[tab_of_possible_moves[i].g_t] = all_of_possible_moves[0];
-                grid[tab_of_possible_moves[i].pos] = all_of_possible_moves[1];
+                grid[tab_of_possible_moves[i].g_t] = temp_piece_storage[0];
+                grid[tab_of_possible_moves[i].pos] = temp_piece_storage[1];
                 break;
             case 66:
                 if (color) {
@@ -1103,7 +1287,7 @@ mov board::bip(bool color, int deepth) {
                     grid[5] = new piece('r', color, true);
                     grid[6] = new piece('k', color, true);
                     grid[7].emblem = '*';
-                    tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
+                    tab_of_possible_moves[i].eva = this->minmax(deepth, !color, -100000, 10000);
                     grid[4] = new piece('k', color, false);
                     grid[5].emblem = '*';
                     grid[6].emblem = '*';
@@ -1113,7 +1297,7 @@ mov board::bip(bool color, int deepth) {
                     grid[61] = new piece('r', color, true);
                     grid[62] = new piece('k', color, true);
                     grid[63].emblem = '*';
-                    tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
+                    tab_of_possible_moves[i].eva = this->minmax(deepth, !color, -100000, 10000);
                     grid[60] = new piece('k', color, false);
                     grid[61].emblem = '*';
                     grid[62].emblem = '*';
@@ -1128,7 +1312,7 @@ mov board::bip(bool color, int deepth) {
                     grid[2] = new piece('k', color, true);
                     grid[3] = new piece('r', color, true);
                     grid[4].emblem = '*';
-                    tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
+                    tab_of_possible_moves[i].eva = this->minmax(deepth, !color, -100000, 10000);
                     grid[0] = new piece('r', color, false);
                     grid[1].emblem = '*';
                     grid[2].emblem = '*';
@@ -1140,7 +1324,7 @@ mov board::bip(bool color, int deepth) {
                     grid[48] = new piece('k', color, true);
                     grid[49] = new piece('r', color, true);
                     grid[50].emblem = '*';
-                    tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
+                    tab_of_possible_moves[i].eva = this->minmax(deepth, !color, -100000, 10000);
                     grid[46] = new piece('r', color, false);
                     grid[47].emblem = '*';
                     grid[48].emblem = '*';
@@ -1150,11 +1334,11 @@ mov board::bip(bool color, int deepth) {
                 break;
 
             default:
-                int shift_in_x = -8;
-                if (color) shift_in_x = 8;
+                int shift_in_x = -16;
+                if (color) shift_in_x = 16;
 
-                all_of_possible_moves[0] = grid[tab_of_possible_moves[i].g_t + shift_in_x];
-                all_of_possible_moves[1] = grid[tab_of_possible_moves[i].pos];
+                temp_piece_storage[0] = grid[tab_of_possible_moves[i].g_t + shift_in_x];
+                temp_piece_storage[1] = grid[tab_of_possible_moves[i].pos];
 
                 grid[tab_of_possible_moves[i].g_t] = grid[i];
                 grid[tab_of_possible_moves[i].g_t].is_moved = true;
@@ -1162,11 +1346,11 @@ mov board::bip(bool color, int deepth) {
                 grid[tab_of_possible_moves[i].pos].emblem = '*';
                 grid[tab_of_possible_moves[i].g_t + shift_in_x].emblem = '*';
 
-                tab_of_possible_moves[i].eva = this->minmax(deepth, color, !color);
+                tab_of_possible_moves[i].eva = this->minmax(deepth, !color, -100000, 10000);
 
-                grid[tab_of_possible_moves[i].g_t + shift_in_x] = all_of_possible_moves[0];
+                grid[tab_of_possible_moves[i].g_t + shift_in_x] = temp_piece_storage[0];
                 grid[tab_of_possible_moves[i].g_t].emblem = '*';
-                grid[tab_of_possible_moves[i].pos] = all_of_possible_moves[1];
+                grid[tab_of_possible_moves[i].pos] = temp_piece_storage[1];
                 break;
         }
     }
@@ -1177,7 +1361,8 @@ mov board::bip(bool color, int deepth) {
     std::cout << "in " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << " seconds\n";
     std::cout << "or " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
               << " milliseconds\n";
-    printf("\a");
+    printf("number of permutations: %d,\a",numbr_of_permutations);
+
     if (color) {
 
         return tab_of_possible_moves[min(tab_of_possible_moves)];
@@ -1187,130 +1372,140 @@ mov board::bip(bool color, int deepth) {
     }
 }
 
-double board::minmax(int deep, bool color_to_start, bool color_now) {
-    if (deep == 0) return this->evaluate();
-    int no_more_kings = 0;
+double board::minmax(int deep, bool color_now, double alpha, double beta) {
+
+
+    if (deep == 0){
+        numbr_lock.lock();
+        numbr_of_permutations++;
+        numbr_lock.unlock();
+        return this->evaluate();}
+    int no_more_kings[2] = {0, 0};
     int oposite_king_position;
 
-    if (color_now == BLACK) {
-        for (int i = 0; i < 64; i++)
-            if (grid[i].emblem == 'k')
-                if (grid[i].color) no_more_kings--;
-                else {
-                    oposite_king_position = i;
-                    no_more_kings++;
-                }
-    } else {
-        for (int i = 0; i < 64; i++)
-            if (grid[i].emblem == 'k') {
-                if (grid[i].color) {
-                    oposite_king_position = i;
-                    no_more_kings--;
-                } else no_more_kings++;
-            }
+
+    for (int i = 0; i < 64; i++)
+        if (grid[i].emblem == 'k')
+            grid[i].color ? no_more_kings[0] = i : no_more_kings[1] = i;
 
 
-    }
-    switch (no_more_kings) {
-        case -1:
-            return -1069;
-        case 1:
-            return 1069;
-            //case 0:
-            //  break;
-    }
+    if (no_more_kings[0] - no_more_kings[1] == no_more_kings[0]) return 1069;
+    if (no_more_kings[0] - no_more_kings[1] == no_more_kings[1]) return -1069;
 
-    array all_of_possible_moves_moves;
-    dynamic_arr<mov> array_of_moves;
+
+    array local_array_of_moves;
+    dynamic_arr<mov> array_of_moves; // the global thing
 
     //todo minmax jest pojebany i ty go źle napisałeś bo jesteś głupi
-//normal stuff
+///normal stuff
     for (int i = 0; i < 64; ++i) {
         if (grid[i].emblem != '*' && grid[i].color == color_now) {
 
-            this->array_of_possible(i, all_of_possible_moves_moves);
+            this->array_of_possible(i, local_array_of_moves);
 
-            for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
+            for (int j = 0; j < local_array_of_moves.size(); j++) {
 
-                mov tp(i, all_of_possible_moves_moves[j], 0);
+                mov tp(i, local_array_of_moves[j], 0);
                 array_of_moves.push_back(tp);
             }
         }
     }
-    // weird stuff
-    int weird_stuff = all_of_possible_moves_moves.size();
 
+    /// weird stuff
+    int weird_stuff = array_of_moves.size();
+/*
+        local_array_of_moves = castle(color_now);
 
-    all_of_possible_moves_moves = castle(color_now);
-    for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
-        mov tp(j, all_of_possible_moves_moves[j], 0);
-        array_of_moves.push_back(tp);
-    }
-    if (color_now) {
-        for (int i = 48; i < 56; i++) {
-            if (grid[i].emblem == 'p' && grid[i].color == color_now) {
-                all_of_possible_moves_moves = upgrade(color_now, i);
-                for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
-                    mov tp(i, all_of_possible_moves_moves[j], 0);
-                    array_of_moves.push_back(tp);
-                }
-
-            }
-        }
-        for (int i = 40; i < 48; i++) {
-            if (grid[i].emblem == 'p' && grid[i].color == color_now) {
-
-                all_of_possible_moves_moves = en_passant(color_now, i);
-                for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
-                    mov tp(i, all_of_possible_moves_moves[j], 0);
-                    array_of_moves.push_back(tp);
-                }
-            }
-        }
-    } else {
-        for (int i = 8; i < 16; i++) {
-            if (grid[i].emblem == 'p' && grid[i].color == color_now) {
-                all_of_possible_moves_moves = upgrade(color_now, i);
-                for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
-                    mov tp(i, all_of_possible_moves_moves[j], 0);
-                    array_of_moves.push_back(tp);
-                }
-
-            }
-        }
-        for (int i = 16; i < 32; i++) {
-            if (grid[i].emblem == 'p' && grid[i].color == color_now) {
-
-                all_of_possible_moves_moves = en_passant(color_now, i);
-                for (int j = 0; j < all_of_possible_moves_moves.size(); j++) {
-                    mov tp(i, all_of_possible_moves_moves[j], 0);
-                    array_of_moves.push_back(tp);
-                }
-            }
+        for (int j = 0; j < local_array_of_moves.size(); j++) {
+            mov tp(j, local_array_of_moves[j], 0);
+            array_of_moves.push_back(tp);
         }
 
+        if (color_now) {
+            for (int i = 48; i < 56; i++) {
+                if (grid[i].emblem == 'p' && grid[i].color == color_now) {
 
-    }
+                    local_array_of_moves = upgrade(color_now, i);
+
+                    for (int j = 0; j < local_array_of_moves.size(); j++) {
+                        mov tp(i, local_array_of_moves[j], 0);
+                        array_of_moves.push_back(tp);
+                    }
+
+                }
+            }
+            for (int i = 40; i < 48; i++) {
+                if (grid[i].emblem == 'p' && grid[i].color == color_now) {
+
+                    local_array_of_moves = en_passant(color_now, i);
+
+                    for (int j = 0; j < local_array_of_moves.size(); j++) {
+                        mov tp(i, local_array_of_moves[j], 0);
+                        array_of_moves.push_back(tp);
+                    }
+                }
+            }
+        } else {
+            for (int i = 8; i < 16; i++) {
+                if (grid[i].emblem == 'p' && grid[i].color == color_now) {
+
+                    local_array_of_moves = upgrade(color_now, i);
+
+                    for (int j = 0; j < local_array_of_moves.size(); j++) {
+                        mov tp(i, local_array_of_moves[j], 0);
+                        array_of_moves.push_back(tp);
+                    }
+
+                }
+            }
+            for (int i = 16; i < 32; i++) {
+                if (grid[i].emblem == 'p' && grid[i].color == color_now) {
+
+                    local_array_of_moves = en_passant(color_now, i);
+
+                    for (int j = 0; j < local_array_of_moves.size(); j++) {
+                        mov tp(i, local_array_of_moves[j], 0);
+                        array_of_moves.push_back(tp);
+                    }
+                }
+            }
+        }
+*/
 
 
 
-
-    /// evaluation & stuff
-    int color_dependence = 1;
-    if (color_now == BLACK)color_dependence = -1;
-    if (array_of_moves.empty()) {
-        if (this->check(oposite_king_position)) return 10000 * color_dependence;
-        return 0;
-    }
+    /// if there are no moves left it means pat or glorius mate and i mean like last man standing shiet
+    double evaluation_at_this_point;
     piece all_of_possible_moves[2];
-    double min_or_max;
-    min_or_max = 10000 * -color_dependence;
+    if (color_now) {
+        evaluation_at_this_point = 100000;
+
+
+        if (array_of_moves.empty()) {
+            if (this->check(no_more_kings[0])) {
+                printf("blacked");
+                return 10000;
+            }
+            return 0;
+        }
+
+    } else {
+        evaluation_at_this_point = -100000;
+        if (array_of_moves.empty()) {
+            if (this->check(no_more_kings[1])) {
+                printf("NOT blacked");
+                return -10000;
+            }
+            return 0;
+        }
+
+    }
 
 
     double min_max = 0.0;
     // reku dla
-
-    if (color_now == WHITE) {
+/// evaluation & stuff
+    if (color_now == WHITE) { // white
         for (int i = 0; i < weird_stuff; i++) {
 
             //if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
@@ -1318,153 +1513,134 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
             all_of_possible_moves[0] = grid[array_of_moves[i].g_t];
             all_of_possible_moves[1] = grid[array_of_moves[i].pos];
 
+
             grid[array_of_moves[i].g_t] = grid[array_of_moves[i].pos];
 
             grid[array_of_moves[i].g_t].is_moved = true;
 
             grid[array_of_moves[i].pos].emblem = '*';
 
-            min_max = minmax(deep - 1, color_to_start, !color_now);
+            min_max = minmax(deep - 1, !color_now, alpha,beta);
 
-            if (min_max > min_or_max) min_or_max = min_max;
+            if (min_max > evaluation_at_this_point) evaluation_at_this_point = min_max;
 
             grid[array_of_moves[i].g_t] = all_of_possible_moves[0];
-
             grid[array_of_moves[i].pos] = all_of_possible_moves[1];
-            if (min_max > 200) return 1000000;
+            if(alpha > evaluation_at_this_point) alpha = evaluation_at_this_point;
+            if(beta >= alpha) {
+                break;
+
+            }
+
         }
 
         for (int i = weird_stuff; i < array_of_moves.size(); i++) {
             switch (array_of_moves[i].g_t) {
                 case 100:
-                    //      if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
+
                     all_of_possible_moves[0] = grid[array_of_moves[i].g_t]; //i+1
                     all_of_possible_moves[1] = grid[array_of_moves[i].pos];
 
                     grid[array_of_moves[i].g_t] = new piece('n', color_now, true);
                     grid[array_of_moves[i].pos].emblem = '*';
 
-                    min_max = minmax(deep - 1, color_to_start, !color_now);
-                    if (min_max > min_or_max) min_or_max = min_max;
+                    min_max = minmax(deep - 1, !color_now, alpha,beta);
+
+                    if (min_max > evaluation_at_this_point) evaluation_at_this_point = min_max;
 
                     grid[array_of_moves[i].g_t] = all_of_possible_moves[0];
                     grid[array_of_moves[i].pos] = all_of_possible_moves[1];
-                    if (min_max > 200) return 1000000;
+                    if(alpha > evaluation_at_this_point) alpha = evaluation_at_this_point;
+                    if(beta >= alpha) {break;}
                     break;
                 case 101:
-                    //    if(grid[array_of_moves[i].g_t].emblem == 'k') return 1000;
+
                     all_of_possible_moves[0] = grid[array_of_moves[i].g_t];
                     all_of_possible_moves[1] = grid[array_of_moves[i].pos];
 
                     grid[array_of_moves[i].g_t] = new piece('q', color_now, true);
                     grid[array_of_moves[i].pos].emblem = '*';
 
-                    min_max = minmax(deep - 1, color_to_start, !color_now);
-                    if (min_max > min_or_max) min_or_max = min_max;
+                    min_max = minmax(deep - 1, !color_now, alpha,beta);
+
+                    if (min_max > evaluation_at_this_point) evaluation_at_this_point = min_max;
 
                     grid[array_of_moves[i].g_t] = all_of_possible_moves[0];
                     grid[array_of_moves[i].pos] = all_of_possible_moves[1];
-                    if (min_max > 200) return 1000000;
+
                     break;
                 case 66:
-                    if (color_now) {
-                        grid[4].emblem = '*';
-                        grid[5] = new piece('r', color_now, true);
-                        grid[6] = new piece('k', color_now, true);
-                        grid[7].emblem = '*';
 
-                        min_max = minmax(deep - 1, color_to_start, !color_now);
+                    grid[60].emblem = '*';
+                    grid[61] = new piece('r', color_now, true);
+                    grid[62] = new piece('k', color_now, true);
+                    grid[63].emblem = '*';
 
-                        if (min_max > min_or_max) min_or_max = min_max;
+                    min_max = minmax(deep - 1, !color_now, alpha,beta);
+                    if (min_max > evaluation_at_this_point) evaluation_at_this_point = min_max;
 
-                        grid[4] = new piece('k', color_now, false);
-                        grid[5].emblem = '*';
-                        grid[6].emblem = '*';
-                        grid[7] = new piece('r', color_now, false);
+                    grid[60] = new piece('k', color_now, false);
+                    grid[61].emblem = '*';
+                    grid[62].emblem = '*';
+                    grid[63] = new piece('r', color_now, false);
+                    if(alpha > evaluation_at_this_point) alpha = evaluation_at_this_point;
+                    if(beta >= alpha) {break; }
 
-
-                    } else {
-                        grid[60].emblem = '*';
-                        grid[61] = new piece('r', color_now, true);
-                        grid[62] = new piece('k', color_now, true);
-                        grid[63].emblem = '*';
-
-                        min_max = minmax(deep - 1, color_to_start, !color_now);
-                        if (min_max > min_or_max) min_or_max = min_max;
-
-                        grid[60] = new piece('k', color_now, false);
-                        grid[61].emblem = '*';
-                        grid[62].emblem = '*';
-                        grid[63] = new piece('r', color_now, false);
-
-                    }
                     break;
                 case 666:
-                    if (color_now) {
-                        grid[0].emblem = '*';
-                        grid[1].emblem = '*';
-                        grid[2] = new piece('k', color_now, true);
-                        grid[3] = new piece('r', color_now, true);
-                        grid[4].emblem = '*';
 
-                        min_max = minmax(deep - 1, color_to_start, !color_now);
-                        if (min_max > min_or_max) min_or_max = min_max;
+                    grid[46].emblem = '*';
+                    grid[47].emblem = '*';
+                    grid[48] = new piece('k', color_now, true);
+                    grid[49] = new piece('r', color_now, true);
+                    grid[50].emblem = '*';
 
-                        grid[0] = new piece('r', color_now, false);
-                        grid[1].emblem = '*';
-                        grid[2].emblem = '*';
-                        grid[3].emblem = '*';
-                        grid[4] = new piece('k', color_now, false);
+                    min_max = minmax(deep - 1, !color_now, alpha,beta);
 
-                    } else {
-                        grid[46].emblem = '*';
-                        grid[47].emblem = '*';
-                        grid[48] = new piece('k', color_now, true);
-                        grid[49] = new piece('r', color_now, true);
-                        grid[50].emblem = '*';
+                    if (min_max > evaluation_at_this_point) evaluation_at_this_point = min_max;
 
-                        min_max = minmax(deep - 1, color_to_start, !color_now);
-                        if (min_max > min_or_max) min_or_max = min_max;
-
-                        grid[46] = new piece('r', color_now, false);
-                        grid[47].emblem = '*';
-                        grid[48].emblem = '*';
-                        grid[49].emblem = '*';
-                        grid[50] = new piece('k', color_now, false);
-                    }
+                    grid[46] = new piece('r', color_now, false);
+                    grid[47].emblem = '*';
+                    grid[48].emblem = '*';
+                    grid[49].emblem = '*';
+                    grid[50] = new piece('k', color_now, false);
+                    if(alpha > evaluation_at_this_point) alpha = evaluation_at_this_point;
+                    if(beta >= alpha) {break; }
                     break;
                 default:
-                    int osem = -8;
-                    if (color_now) osem = 8;
+                    int shift_in_x = -16;
 
-                    all_of_possible_moves[0] = grid[array_of_moves[i].g_t + osem];
+                    all_of_possible_moves[0] = grid[array_of_moves[i].g_t + shift_in_x];
                     all_of_possible_moves[1] = grid[array_of_moves[i].pos];
 
                     grid[array_of_moves[i].g_t] = grid[i];
                     grid[array_of_moves[i].g_t].is_moved = true;
 
                     grid[array_of_moves[i].pos].emblem = '*';
-                    grid[array_of_moves[i].g_t + osem].emblem = '*';
+                    grid[array_of_moves[i].g_t + shift_in_x].emblem = '*';
 
 
-                    min_max = minmax(deep - 1, color_to_start, !color_now);
-                    if (min_max > min_or_max) min_or_max = min_max;
+                    min_max = minmax(deep - 1, !color_now, alpha,beta);
+
+                    if (min_max > evaluation_at_this_point) evaluation_at_this_point = min_max;
 
 
-                    grid[array_of_moves[i].g_t + osem] = all_of_possible_moves[0];
+                    grid[array_of_moves[i].g_t + shift_in_x] = all_of_possible_moves[0];
                     grid[array_of_moves[i].g_t].emblem = '*';
                     grid[array_of_moves[i].pos] = all_of_possible_moves[1];
-                    if (min_max > 200) return 1000000;
+                    if(alpha > evaluation_at_this_point) alpha = evaluation_at_this_point;
+                    if(beta >= alpha) {break; }
                     break;
             }
 
 
         }
-    } else {
+    } else { // if black
         for (int i = 0; i < weird_stuff; i++) {
             //if(grid[array_of_moves[i].g_t].emblem == 'k') return -1000;
             all_of_possible_moves[0] = grid[array_of_moves[i].g_t];
             all_of_possible_moves[1] = grid[array_of_moves[i].pos];
+
 
             grid[array_of_moves[i].g_t] = grid[array_of_moves[i].pos];
 
@@ -1473,14 +1649,15 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
             grid[array_of_moves[i].pos].emblem = '*';
 
 
-            min_max = minmax(deep - 1, color_to_start, !color_now);
-            if (min_max < min_or_max) min_or_max = min_max;
+            min_max = minmax(deep - 1, !color_now, alpha,beta);
+
+            if (min_max < evaluation_at_this_point) evaluation_at_this_point = min_max;
 
 
             grid[array_of_moves[i].g_t] = all_of_possible_moves[0];
-
             grid[array_of_moves[i].pos] = all_of_possible_moves[1];
-            if (min_max < -200) return -1000000;
+            if(beta < evaluation_at_this_point) beta = evaluation_at_this_point;
+            if(beta <= alpha) {break;}
         }
 
         for (int i = weird_stuff; i < array_of_moves.size(); i++) {
@@ -1494,13 +1671,15 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
                     grid[array_of_moves[i].pos].emblem = '*';
 
 
-                    min_max = minmax(deep - 1, color_to_start, !color_now);
-                    if (min_max < min_or_max) min_or_max = min_max;
+                    min_max = minmax(deep - 1, !color_now, alpha,beta);
+
+                    if (min_max < evaluation_at_this_point) evaluation_at_this_point = min_max;
 
 
                     grid[array_of_moves[i].g_t] = all_of_possible_moves[0];
                     grid[array_of_moves[i].pos] = all_of_possible_moves[1];
-                    if (min_max < -200) return -1000000;
+                    if(beta < evaluation_at_this_point) beta = evaluation_at_this_point;
+                    if(beta <= alpha) {break; }
                     break;
                 case 101:
                     //    if(grid[array_of_moves[i].g_t].emblem == 'k') return -1000;
@@ -1511,106 +1690,83 @@ double board::minmax(int deep, bool color_to_start, bool color_now) {
                     grid[array_of_moves[i].pos].emblem = '*';
 
 
-                    min_max = minmax(deep - 1, color_to_start, !color_now);
-                    if (min_max < min_or_max) min_or_max = min_max;
+                    min_max = minmax(deep - 1, !color_now, alpha,beta);
+
+                    if (min_max < evaluation_at_this_point) evaluation_at_this_point = min_max;
 
 
                     grid[array_of_moves[i].g_t] = all_of_possible_moves[0];
                     grid[array_of_moves[i].pos] = all_of_possible_moves[1];
-                    if (min_max < -200) return -1000000;
+                    if(beta < evaluation_at_this_point) beta = evaluation_at_this_point;
+                    if(beta <= alpha) {break;}
                     break;
-                case 66:
-                    if (color_now) {
-                        grid[4].emblem = '*';
-                        grid[5] = new piece('r', color_now, true);
-                        grid[6] = new piece('k', color_now, true);
-                        grid[7].emblem = '*';
-                        min_max = minmax(deep - 1, color_to_start, !color_now);
-                        if (min_max < min_or_max) min_or_max = min_max;
-                        grid[4] = new piece('k', color_now, false);
-                        grid[5].emblem = '*';
-                        grid[6].emblem = '*';
+                case 66: {
 
+                    grid[4].emblem = '*';
+                    grid[5] = new piece('r', color_now, true);
+                    grid[6] = new piece('k', color_now, true);
+                    grid[7].emblem = '*';
+                    min_max = minmax(deep - 1, !color_now, alpha,beta);
 
-                        grid[60].emblem = '*';
-                        grid[63].emblem = '*';
-                        min_max = minmax(deep - 1, color_to_start, !color_now);
-                        if (min_max < min_or_max) min_or_max = min_max;
-                        grid[60] = grid[60];
-                        grid[60].is_moved = false;
-                        grid[63] = grid[61];
-                        grid[61].is_moved = false; // todo poprawspo
-                        grid[61].emblem = '*';
-                        grid[62].emblem = '*';
+                    if (min_max < evaluation_at_this_point) evaluation_at_this_point = min_max;
+                    grid[4] = new piece('k', color_now, false);
+                    grid[5].emblem = '*';
+                    grid[6].emblem = '*';
 
-                    }
+                }
+                    if(beta < evaluation_at_this_point) beta = evaluation_at_this_point;
+                    if(beta <= alpha) {break; }
                     break;
-                case 666:
-                    if (color_now) {
-                        grid[2] = grid[4];
-                        grid[3] = grid[0];
-                        grid[0].emblem = '*';           /// todo  like this one but restxd
-                        grid[1].emblem = '*';
-                        grid[4].emblem = '*';
-                        min_max = minmax(deep - 1, color_to_start, !color_now);
-                        if (min_max < min_or_max) min_or_max = min_max;
-                        grid[0] = grid[3];
-                        grid[0].is_moved = false;
-                        grid[4] = grid[2];
-                        grid[4].is_moved = false;
+                case 666: {
 
-                        grid[1].emblem = '*';
-                        grid[2].emblem = '*';
-                        grid[3].emblem = '*';
+                    grid[2] = grid[4];
+                    grid[3] = grid[0];
+                    grid[0].emblem = '*';
+                    grid[1].emblem = '*';
+                    grid[4].emblem = '*';
+                    min_max = minmax(deep - 1, !color_now, alpha,beta);
+                    if (min_max < evaluation_at_this_point) evaluation_at_this_point = min_max;
 
-                    } else {
-                        grid[46].emblem = '*';
-                        grid[47].emblem = '*';
-                        grid[48] = new piece('k', color_now, true);
-                        grid[49] = new piece('r', color_now, true);
-                        grid[50].emblem = '*';
-                        min_max = minmax(deep - 1, color_to_start, !color_now);
-                        if (min_max < min_or_max) min_or_max = min_max;
-                        grid[46] = new piece('r', color_now, false);
-                        grid[47].emblem = '*';
-                        grid[48].emblem = '*';
-                        grid[49].emblem = '*';
-                        grid[50] = new piece('k', color_now, false);
-                    }
+                    grid[0] = grid[3];
+                    grid[0].is_moved = false;
+                    grid[4] = grid[2];
+                    grid[4].is_moved = false;
+
+                    grid[1].emblem = '*';
+                    grid[2].emblem = '*';
+                    grid[3].emblem = '*';
+
+                    if(beta < evaluation_at_this_point) beta = evaluation_at_this_point;
+                    if(beta <= alpha) {break; }
+                }
                     break;
                 default:
-                    int osem = -8;
-                    if (color_now) osem = 8;
+                    int shift_in_x = 16;
 
-                    all_of_possible_moves[0] = grid[array_of_moves[i].g_t + osem];
+                    all_of_possible_moves[0] = grid[array_of_moves[i].g_t + shift_in_x];
                     all_of_possible_moves[1] = grid[array_of_moves[i].pos];
 
                     grid[array_of_moves[i].g_t] = grid[i];
                     grid[array_of_moves[i].g_t].is_moved = true;
 
                     grid[array_of_moves[i].pos].emblem = '*';
-                    grid[array_of_moves[i].g_t + osem].emblem = '*';
+                    grid[array_of_moves[i].g_t + shift_in_x].emblem = '*';
 
-                    min_max = minmax(deep - 1, color_to_start, !color_now);
-                    if (min_max < min_or_max) min_or_max = min_max;
+                    min_max = minmax(deep - 1, !color_now, alpha,beta);
+                    if (min_max < evaluation_at_this_point) evaluation_at_this_point = min_max;
 
-                    grid[array_of_moves[i].g_t + osem] = all_of_possible_moves[0];
+                    grid[array_of_moves[i].g_t + shift_in_x] = all_of_possible_moves[0];
                     grid[array_of_moves[i].g_t].emblem = '*';
                     grid[array_of_moves[i].pos] = all_of_possible_moves[1];
-                    if (min_max < -200) return -1000000;
+                    if(beta < evaluation_at_this_point) beta = evaluation_at_this_point;
+                    if(beta <= alpha) {break; }
                     break;
             }
-
-
         }
-
-
     }
-/*
 
-*/
 
-    return min_or_max; //i guess they never max huh?
+    return evaluation_at_this_point; //i guess they never max huh?
     // u've got a boyfriend i bet he never kiss ya?
 }
 
@@ -1683,21 +1839,23 @@ array board::castle(bool color) {
 
 array board::upgrade(bool color, int position) {
     array possible_moves;
-
+    if (grid[position].emblem != 'p') return possible_moves;
     switch (position / 8) {
         case 1:
-            if (!color && this->possible(position, position - 8)) {
-                possible_moves.push_back(position);
+            if (possible(position, position - 8) || possible(position, position - 9) ||
+                possible(position, position - 7)) {
+
                 possible_moves.push_back(100);
-                possible_moves.push_back(position);
+
                 possible_moves.push_back(101);
             }
             break;
         case 6:
-            if (color && this->possible(position, position + 8)) {
-                possible_moves.push_back(position);
+            if (possible(position, position + 8) || possible(position, position + 9) ||
+                possible(position, position + 7)) {
+
                 possible_moves.push_back(100);
-                possible_moves.push_back(position);
+
                 possible_moves.push_back(101);
             }
             break;
@@ -1712,6 +1870,8 @@ array board::en_passant(bool color, int position) {
 // 72+
 
     array possible_moves;
+    if (grid[position].emblem != 'p') return possible_moves;
+
     switch (position / 8) {
         case 3: // white
             if (!color && list_of_moves.size() > 3) {
@@ -1724,13 +1884,10 @@ array board::en_passant(bool color, int position) {
                 if (list_of_moves.back()[i] == 'p' && hold21 - hold54 == 16) {
 
                     if (hold54 == position - 1 && position % 8 != 0) {
-
-
-                        possible_moves.push_back(hold21 - 8);// 16
+                        possible_moves.push_back(hold21 + 48);// 8 do 16
                     }
                     if (hold54 == position + 1 && position % 8 != 7) {
-
-                        possible_moves.push_back(hold21 - 8);
+                        possible_moves.push_back(hold21 + 48);
                     }
 
                 }
@@ -1748,12 +1905,12 @@ array board::en_passant(bool color, int position) {
 
                     if (hold54 == position - 1 && position % 8 != 0) {
 
-                        possible_moves.push_back(hold21 - 8);
+                        possible_moves.push_back(hold21 + 48);
                     }
                     if (hold54 == position + 1 && position % 8 != 7) {
 
 
-                        possible_moves.push_back(hold21 - 8);
+                        possible_moves.push_back(hold21 + 48);
                     }
                 }
             }
@@ -2652,7 +2809,7 @@ bool board::possible(int position, int go_to) {
                         if (grid[full_board_of_moves_4_bishop[position][2][i]].emblem != '*')
                             if (grid[full_board_of_moves_4_bishop[position][2][i]].color != color)
                                 return full_board_of_moves_4_bishop[position][2][i] == go_to;
-                            else return false;
+                        return false;
 
                         if (full_board_of_moves_4_bishop[position][2][i] == go_to) return true;
                     }
@@ -2661,7 +2818,7 @@ bool board::possible(int position, int go_to) {
                         if (grid[full_board_of_moves_4_bishop[position][0][i]].emblem != '*')
                             if (grid[full_board_of_moves_4_bishop[position][0][i]].color != color)
                                 return full_board_of_moves_4_bishop[position][0][i] == go_to;
-                            else return false;
+                        return false;
 
                         if (full_board_of_moves_4_bishop[position][0][i] == go_to) return true;
                     }
@@ -2672,7 +2829,7 @@ bool board::possible(int position, int go_to) {
                     if (grid[full_board_of_moves_4_bishop[position][2][i]].emblem != '*')
                         if (grid[full_board_of_moves_4_bishop[position][2][i]].color != color)
                             return full_board_of_moves_4_bishop[position][2][i] == go_to;
-                        else return false;
+                    return false;
 
                     if (full_board_of_moves_4_bishop[position][2][i] == go_to) return true;
                 }
@@ -2686,7 +2843,7 @@ bool board::possible(int position, int go_to) {
                         if (grid[full_board_of_moves_4_bishop[position][3][i]].emblem != '*')
                             if (grid[full_board_of_moves_4_bishop[position][3][i]].color != color)
                                 return full_board_of_moves_4_bishop[position][3][i] == go_to;
-                            else return false;
+                        return false;
 
                         if (full_board_of_moves_4_bishop[position][3][i] == go_to) return true;
                     }
@@ -2695,7 +2852,7 @@ bool board::possible(int position, int go_to) {
                         if (grid[full_board_of_moves_4_bishop[position][1][i]].emblem != '*')
                             if (grid[full_board_of_moves_4_bishop[position][1][i]].color != color)
                                 return full_board_of_moves_4_bishop[position][1][i] == go_to;
-                            else return false;
+                        return false;
 
                         if (full_board_of_moves_4_bishop[position][2][i] == go_to) return true;
                     }
@@ -2713,7 +2870,7 @@ bool board::possible(int position, int go_to) {
                             if (grid[full_board_of_moves_4_rook[position][1][i]].color != color)
                                 return full_board_of_moves_4_rook[position][1][i] == go_to;
 
-                            else return false;
+                        return false;
                         if (full_board_of_moves_4_rook[position][1][i] == go_to) return true;
                     }
                 } else {
@@ -2721,7 +2878,7 @@ bool board::possible(int position, int go_to) {
                         if (grid[full_board_of_moves_4_rook[position][3][i]].emblem != '*')
                             if (grid[full_board_of_moves_4_rook[position][3][i]].color != color)
                                 return full_board_of_moves_4_rook[position][3][i] == go_to;
-                            else return false;
+                        return false;
                         if (full_board_of_moves_4_rook[position][3][i] == go_to) return true;
                     }
                 }
@@ -2736,7 +2893,7 @@ bool board::possible(int position, int go_to) {
                         if (grid[full_board_of_moves_4_rook[position][0][i]].emblem != '*')
                             if (grid[full_board_of_moves_4_rook[position][0][i]].color != color)
                                 return full_board_of_moves_4_rook[position][0][i] == go_to;
-                            else return false;
+                        return false;
                         if (full_board_of_moves_4_rook[position][0][i] == go_to) return true;
                     }
 
@@ -2745,7 +2902,7 @@ bool board::possible(int position, int go_to) {
                         if (grid[full_board_of_moves_4_rook[position][2][i]].emblem != '*')
                             if (grid[full_board_of_moves_4_rook[position][2][i]].color != color)
                                 return full_board_of_moves_4_rook[position][2][i] == go_to;
-                            else return false;
+                        return false;
                         if (full_board_of_moves_4_rook[position][2][i] == go_to) return true;
                     }
                 }
@@ -2762,7 +2919,7 @@ bool board::possible(int position, int go_to) {
                         if (grid[full_board_of_moves_4_bishop[position][2][i]].emblem != '*')
                             if (grid[full_board_of_moves_4_bishop[position][2][i]].color != color)
                                 return full_board_of_moves_4_bishop[position][2][i] == go_to;
-                            else return false;
+                        return false;
 
                         if (full_board_of_moves_4_bishop[position][2][i] == go_to) return true;
                     }
@@ -2771,7 +2928,7 @@ bool board::possible(int position, int go_to) {
                         if (grid[full_board_of_moves_4_bishop[position][0][i]].emblem != '*')
                             if (grid[full_board_of_moves_4_bishop[position][0][i]].color != color)
                                 return full_board_of_moves_4_bishop[position][0][i] == go_to;
-                            else return false;
+                        return false;
 
                         if (full_board_of_moves_4_bishop[position][0][i] == go_to) return true;
                     }
@@ -2782,7 +2939,7 @@ bool board::possible(int position, int go_to) {
                     if (grid[full_board_of_moves_4_bishop[position][2][i]].emblem != '*')
                         if (grid[full_board_of_moves_4_bishop[position][2][i]].color != color)
                             return full_board_of_moves_4_bishop[position][2][i] == go_to;
-                        else return false;
+                    return false;
 
                     if (full_board_of_moves_4_bishop[position][2][i] == go_to) return true;
                 }
@@ -2796,7 +2953,7 @@ bool board::possible(int position, int go_to) {
                         if (grid[full_board_of_moves_4_bishop[position][3][i]].emblem != '*')
                             if (grid[full_board_of_moves_4_bishop[position][3][i]].color != color)
                                 return full_board_of_moves_4_bishop[position][3][i] == go_to;
-                            else return false;
+                        return false;
 
                         if (full_board_of_moves_4_bishop[position][3][i] == go_to) return true;
                     }
@@ -2805,7 +2962,7 @@ bool board::possible(int position, int go_to) {
                         if (grid[full_board_of_moves_4_bishop[position][1][i]].emblem != '*')
                             if (grid[full_board_of_moves_4_bishop[position][1][i]].color != color)
                                 return full_board_of_moves_4_bishop[position][1][i] == go_to;
-                            else return false;
+                        return false;
 
                         if (full_board_of_moves_4_bishop[position][2][i] == go_to) return true;
                     }
@@ -2823,7 +2980,7 @@ bool board::possible(int position, int go_to) {
                             if (grid[full_board_of_moves_4_rook[position][1][i]].color != color)
                                 return full_board_of_moves_4_rook[position][1][i] == go_to;
 
-                            else return false;
+                        return false;
                         if (full_board_of_moves_4_rook[position][1][i] == go_to) return true;
                     }
                 } else {
@@ -2831,7 +2988,7 @@ bool board::possible(int position, int go_to) {
                         if (grid[full_board_of_moves_4_rook[position][3][i]].emblem != '*')
                             if (grid[full_board_of_moves_4_rook[position][3][i]].color != color)
                                 return full_board_of_moves_4_rook[position][3][i] == go_to;
-                            else return false;
+                        return false;
                         if (full_board_of_moves_4_rook[position][3][i] == go_to) return true;
                     }
                 }
@@ -2849,7 +3006,7 @@ bool board::possible(int position, int go_to) {
                             if (grid[full_board_of_moves_4_rook[position][1][i]].color != color)
                                 return full_board_of_moves_4_rook[position][1][i] == go_to;
 
-                            else return false;
+                        return false;
                         if (full_board_of_moves_4_rook[position][1][i] == go_to) return true;
                     }
                 } else {
@@ -2857,7 +3014,7 @@ bool board::possible(int position, int go_to) {
                         if (grid[full_board_of_moves_4_rook[position][3][i]].emblem != '*')
                             if (grid[full_board_of_moves_4_rook[position][3][i]].color != color)
                                 return full_board_of_moves_4_rook[position][3][i] == go_to;
-                            else return false;
+                        return false;
                         if (full_board_of_moves_4_rook[position][3][i] == go_to) return true;
                     }
                 }
@@ -2870,7 +3027,7 @@ bool board::possible(int position, int go_to) {
                         if (grid[full_board_of_moves_4_rook[position][0][i]].emblem != '*')
                             if (grid[full_board_of_moves_4_rook[position][0][i]].color != color)
                                 return full_board_of_moves_4_rook[position][0][i] == go_to;
-                            else return false;
+                        return false;
                         if (full_board_of_moves_4_rook[position][0][i] == go_to) return true;
                     }
 
@@ -2879,7 +3036,7 @@ bool board::possible(int position, int go_to) {
                         if (grid[full_board_of_moves_4_rook[position][2][i]].emblem != '*')
                             if (grid[full_board_of_moves_4_rook[position][2][i]].color != color)
                                 return full_board_of_moves_4_rook[position][2][i] == go_to;
-                            else return false;
+                        return false;
                         if (full_board_of_moves_4_rook[position][2][i] == go_to) return true;
                     }
                 }
@@ -2925,5 +3082,6 @@ void board::admin_l(std::string all_of_possible_moves) {
     myfile.close();
 
 }
+
 
 

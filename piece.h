@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 #include "mov.h"
-//#include "board.h"
 
 
 class piece {//0 białe i czarne
@@ -21,13 +20,13 @@ public:
     piece() {
 
         emblem = '*';
-        is_moved = 0;
-        color = 0;
+        is_moved = false;
+        color = false;
     };
 
     piece(char em, bool col) {
         emblem = em;
-        is_moved = 0;
+        is_moved = false;
         color = col;
     };
     piece(char em, bool col, bool moved) {
@@ -62,20 +61,14 @@ public:
                 break;
 
         }
-        if (a % 2 == 1) color = 1;
-        else color = 0;
-        is_moved = 0;
+        if (a % 2 == 1) color = true;
+        else color = false;
+        is_moved = false;
 
 
     };
 
     //virtual int conditions() = 0;
-
-
-
-
-
-
 
     piece &operator=(piece *a);
 
