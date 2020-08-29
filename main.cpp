@@ -12,12 +12,9 @@ int main() {
     srand(time(NULL));
 
     board cghe;
-    cghe.admin();
-    cghe.pvc(4,BLACK);
+    cghe.cc();
 
 
-
-    std::cout<<">>>>>>>>>"<< compare::counter <<"<<<<<<<";
 
 
 //TODO  dać Elizie porzetesować szachwnice i najlepiej jeszcze komuś

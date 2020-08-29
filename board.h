@@ -305,7 +305,7 @@ return *this;
 
     void pvc(int deepth, bool player_s_color);
 
-    void cvc(int deep);
+
 
     void show();
 
@@ -341,9 +341,8 @@ return *this;
 
     bool check(int position);
 
-    mov first_level(bool color, int deepth, int number_of_threads = -1);
-
-    double seckond_level(bool color, int deepth, int number_of_threads = -1);
+    void cvc(bool color, int time_2_move, int time_2_w8,std::string location, bool who_on_top, int deepth_for_bip);
+    void cc();
 };
 
 
