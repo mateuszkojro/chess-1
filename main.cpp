@@ -12,7 +12,7 @@ int main() {
     srand(time(NULL));
 
     board cghe;
-    cghe.cc();
+    cghe.cvc(WHITE,500,30000,"dane.txt",true,4);
 
 
 
