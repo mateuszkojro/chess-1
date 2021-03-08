@@ -1,6 +1,7 @@
 //
 // Created by piotr on 28.06.2020.
 //
+// I was here by Mateusz Kojro
 
 #ifndef CHESS_BOARD_H
 #define CHESS_BOARD_H
